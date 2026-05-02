@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Publications — Amy Jane Wang</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    :root {
+      --background: #f0efeb;
+      --ink:        #1a1817;
+      --ink-mid:    #6b6560;
+      --ink-light:  #a09890;
+      --font-main:  'Helvetica Neue', Helvetica, Arial, sans-serif;
+      --font-hand:  'Caveat', cursive;
+    }
+
+    body {
+      background: var(--background);
+      color: var(--ink);
+      font-family: var(--font-main);
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      padding: 52px 24px 32px;
+    }
+    .site-title {
+      font-size: clamp(1.9rem, 4vw, 2.8rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      text-decoration: none;
+      color: var(--ink);
+      display: inline-block;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: clamp(20px, 4vw, 52px);
+      margin-top: 36px;
+    }
+    nav a {
+      font-size: 0.82rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      text-decoration: none;
+      color: var(--ink);
+      position: relative;
+      padding-bottom: 3px;
+      transition: color 0.2s;
+    }
+    nav a.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      border-bottom: 1px solid var(--ink);
+    }
+    nav a:hover { color: var(--ink-mid); }
+
+    /* ── Publications content ── */
+    .works-content {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 64px 32px 160px;
+    }
+
+    .works-group {
+      margin-bottom: 52px;
+    }
+
+    .works-group-label {
+      font-size: 1.1rem;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      margin-bottom: 20px;
+    }
+
+    .works-item {
+      display: flex;
+      flex-direction: column;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(39,35,32,0.07);
+    }
+    .works-item:last-child { border-bottom: none; }
+
+    .works-item-line {
+      font-size: 0.88rem;
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--ink);
+    }
+    .works-item-line em {
+      font-style: italic;
+    }
+    .works-item-note {
+      font-size: 0.72rem;
+      color: var(--ink-light);
+      margin-top: 2px;
+    }
+    .works-item-line a {
+      color: inherit;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(26,24,23,0.25);
+      transition: border-color 0.15s;
+    }
+    .works-item-line a:hover {
+      border-bottom-color: var(--ink);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="about.html" class="site-title">Amy Jane Wang</a>
+  <nav>
+    <a href="index.html#timeline">timeline</a>
+    <a href="works.html" class="active">publications</a>
+
+    <a href="https://www.linkedin.com/in/amjwang/" target="_blank">linkedin</a>
+    <a href="https://amyjwang.substack.com/" target="_blank">substack</a>
+  </nav>
+</header>
+
+<main class="works-content">
+
+  <div class="works-group">
+    <div class="works-group-label">Selected Poems</div>
+    <div class="works-item">
+      <span class="works-item-line"><a href="http://www.cheappoplit.com/home/amy-wang" target="_blank"><em>sear</em></a> in CHEAP POP</span>
+      <span class="works-item-note">nominated for the Pushcart Prize</span>
+    </div>
+    <div class="works-item">
+      <span class="works-item-line"><a href="https://theadroitjournal.org/issue-forty-two/amy-wang/" target="_blank"><em>elegy for childhood</em></a> and <a href="https://theadroitjournal.org/issue-forty-two/amy-wang/" target="_blank"><em>on this side of the highway</em></a> in Adroit</span>
+    </div>
+    <div class="works-item">
+      <span class="works-item-line"><a href="https://www.theshorepoetry.org/amy-wang-summer-fire" target="_blank"><em>Summer Fire</em></a> in The Shore</span>
+      <span class="works-item-note">nominated for the Pushcart Prize</span>
+    </div>
+    <div class="works-item">
+      <span class="works-item-line"><a href="https://www.peachmgzn.com/amy-wang" target="_blank"><em>I love you the way dogs love people they will</em></a> and <a href="https://www.peachmgzn.com/amy-wang" target="_blank"><em>elhoek</em></a> in Peach Mag</span>
+    </div>
+    <div class="works-item">
+      <span class="works-item-line"><a href="https://waxwingmag.org/items/issue30/1_Wang-In-the-Summer.php" target="_blank"><em>in the summer</em></a> in Waxwing</span>
+    </div>
+    <div class="works-item">
+      <span class="works-item-line"><a href="https://aaww.org/postauthor/amy-wang/" target="_blank"><em>Margins</em></a> in AAWW</span>
+    </div>
+  </div>
+
+  <div class="works-group">
+    <div class="works-group-label">Selected Prose</div>
+    <div class="works-item">
+      <span class="works-item-line"><a href="https://gonelawn.net/journal/issue40/Wang.php" target="_blank"><em>summer crime scene</em></a> in Gone Lawn</span>
+    </div>
+    <div class="works-item">
+      <span class="works-item-line"><a href="https://bluemarblereview.com/sundays/" target="_blank"><em>Sundays</em></a> in Blue Marble Review</span>
+    </div>
+    <div class="works-item">
+      <span class="works-item-line"><a href="https://xraylitmag.com/rewind-by-amy-wang/fiction/" target="_blank"><em>rewind</em></a> in X-R-A-Y Literary</span>
+    </div>
+    <div class="works-item">
+      <span class="works-item-line"><em>Ghosting</em> (in print) in Capsule Stories</span>
+      <span class="works-item-note">nominated for Best American Short Stories</span>
+    </div>
+    <div class="works-item">
+      <span class="works-item-line"><a href="https://sinetheta.net/20.html" target="_blank"><em>Ama</em></a> in Sine Theta Magazine</span>
+      <span class="works-item-note">Spotlighted Selection, Best Small Fictions 2022</span>
+    </div>
+    <div class="works-item">
+      <span class="works-item-line"><a href="http://www.interlochenreview.org/aqi" target="_blank"><em>Aqi</em></a> in the Interlochen Review</span>
+    </div>
+    <div class="works-item">
+      <span class="works-item-line"><a href="https://www.gasherjournal.com/single-post/amy-wang" target="_blank"><em>swallow-mouth</em></a> in GASHER</span>
+    </div>
+    <div class="works-item">
+      <span class="works-item-line"><a href="https://sundoglit.com/jane-yin-amy-wang/" target="_blank"><em>Fishhook Babies</em></a> in Sundog Lit</span>
+    </div>
+  </div>
+
+</main>
+
+</body>
+</html>

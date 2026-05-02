@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amy Jane Wang</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --background: #f0efeb;
+      --ink:        #1a1817;
+      --ink-mid:    #6b6560;
+      --font-main:  'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      background: var(--background);
+      color: var(--ink);
+      font-family: var(--font-main);
+      overflow-x: hidden;
+    }
+
+    header {
+      text-align: center;
+      padding: 52px 24px 32px;
+      position: relative;
+      z-index: 20;
+    }
+    .site-title {
+      font-size: clamp(1.9rem, 4vw, 2.8rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      display: inline-block;
+      text-decoration: none;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: clamp(20px, 4vw, 52px);
+      margin-top: 36px;
+    }
+    nav a {
+      font-size: 0.82rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      text-decoration: none;
+      color: var(--ink);
+      position: relative;
+      padding-bottom: 3px;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--ink-mid); }
+
+    .stage {
+      position: relative;
+      width: 100%;
+      min-height: calc(100vh - 160px);
+    }
+
+    .scatter-photo {
+      position: absolute;
+      object-fit: cover;
+      display: block;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .scatter-photo.loaded { opacity: 1; }
+
+    .bio-cell {
+      position: absolute;
+      z-index: 2;
+      display: flex;
+      align-items: flex-start;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .bio-cell.loaded { opacity: 1; }
+    .bio-cell p {
+      font-size: 0.72rem;
+      font-weight: 400;
+      line-height: 1.55;
+      color: var(--ink);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="about.html" class="site-title">Amy Jane Wang</a>
+  <nav>
+    <a href="index.html">timeline</a>
+    <a href="works.html">publications</a>
+    <a href="https://www.linkedin.com/in/amjwang/" target="_blank">linkedin</a>
+    <a href="https://amyjwang.substack.com/" target="_blank">substack</a>
+  </nav>
+</header>
+
+<div class="stage" id="stage"></div>
+
+<script>
+  // ─── Add your photo filenames here ───────────────────────────
+  const PHOTOS = [
+    'photos/flower.png',
+    'photos/photo.png',
+    'photos/sunset.png',
+    'photos/IMG_0224.png',
+    'photos/IMG_1672.png',
+    'photos/IMG_6374.png',
+    'photos/IMG_6380.png',
+    'photos/IMG_6532.jpeg',
+    'photos/IMG_7670.jpeg',
+    'photos/IMG_7813.jpeg',
+  ];
+  // ─────────────────────────────────────────────────────────────
+
+  const G    = 14; // gap between photos (px)
+  const COLS = 3;
+  const ROWS = 3;
+
+  const BIO = 'Hi, I\'m Amy. I\'m currently a junior at Stanford University — majoring in Symbolic Systems and minoring in Creative Writing.';
+
+  let resizeTimer;
+
+  function scatter() {
+    const stage = document.getElementById('stage');
+    stage.innerHTML = ''; // clear on each call
+
+    // Measure the horizontal span of the nav items
+    const navLinks  = document.querySelectorAll('nav a');
+    const firstLink = navLinks[0].getBoundingClientRect();
+    const lastLink  = navLinks[navLinks.length - 1].getBoundingClientRect();
+    const navLeft   = firstLink.left;
+    const navWidth  = lastLink.right - navLeft;
+
+    // Cell size fits 3 columns within nav width; font scales with it
+    const S        = Math.floor((navWidth - (COLS - 1) * G) / COLS);
+    const fontSize = Math.max(9, Math.round(S * 0.072)) + 'px';
+
+    // 9 cells: 1 bio + 8 photos, all shuffled
+    const photos = [...PHOTOS].sort(() => Math.random() - 0.5).slice(0, COLS * ROWS - 1);
+    const items  = ['bio', ...photos].sort(() => Math.random() - 0.5);
+
+    const gLeft = navLeft;
+    const gTop  = 36;
+
+    items.forEach((item, i) => {
+      const col  = i % COLS;
+      const row  = Math.floor(i / COLS);
+      const left = gLeft + col * (S + G);
+      const top  = gTop  + row * (S + G);
+
+      if (item === 'bio') {
+        const cell = document.createElement('div');
+        cell.className = 'bio-cell';
+        cell.style.width  = S + 'px';
+        cell.style.height = S + 'px';
+        cell.style.left   = left + 'px';
+        cell.style.top    = top  + 'px';
+        const p = document.createElement('p');
+        p.textContent = BIO;
+        p.style.fontSize = fontSize;
+        cell.appendChild(p);
+        stage.appendChild(cell);
+        requestAnimationFrame(() => cell.classList.add('loaded'));
+      } else {
+        const img = document.createElement('img');
+        img.className = 'scatter-photo';
+        img.alt = '';
+        img.style.width  = S + 'px';
+        img.style.height = S + 'px';
+        img.style.left   = left + 'px';
+        img.style.top    = top  + 'px';
+        img.onload = () => img.classList.add('loaded');
+        img.src = item;
+        stage.appendChild(img);
+      }
+    });
+  }
+
+  window.addEventListener('load', scatter);
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(scatter, 150);
+  });
+</script>
+
+</body>
+</html>

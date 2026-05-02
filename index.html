@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amy Jane Wang</title>
+  <!-- Caveat kept only for hand-drawn annotations -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* ─────────────────────────────────────────────
+       DESIGN SETTINGS — safe to edit
+    ───────────────────────────────────────────── */
+    :root {
+      --background:   #f0efeb;   /* page background color */
+      --ink:          #1a1817;   /* main text / line color */
+      --ink-mid:      #6b6560;   /* secondary text color  */
+      --ink-light:    #a09890;   /* year labels, faint text */
+      --font-main:    'Helvetica Neue', Helvetica, Arial, sans-serif;
+      --font-hand:    'Caveat', cursive;  /* annotations only */
+    }
+
+    /* ─────────────────────────────────────────────
+       Base
+    ───────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    a { color: inherit; text-decoration: none; }
+    html  { scroll-behavior: smooth; }
+    body  {
+      background: var(--background);
+      color: var(--ink);
+      font-family: var(--font-main);
+      overflow-x: hidden;
+    }
+
+    /* ─────────────────────────────────────────────
+       Header
+    ───────────────────────────────────────────── */
+    header {
+      text-align: center;
+      padding: 52px 24px 32px;
+    }
+    .site-title,
+    .site-title:link,
+    .site-title:visited,
+    .site-title:hover,
+    .site-title:active {
+      font-size: clamp(1.9rem, 4vw, 2.8rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      text-decoration: none;
+      color: var(--ink);
+      display: inline-block;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: clamp(20px, 4vw, 52px);
+      margin-top: 36px;
+    }
+    nav a {
+      font-family: var(--font-main);
+      font-size: 0.82rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      text-decoration: none;
+      color: var(--ink);
+      position: relative;
+      padding-bottom: 3px;
+      transition: color 0.2s;
+    }
+    nav a.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      border-bottom: 1.5px solid var(--ink);
+    }
+    nav a:hover { color: var(--ink-mid); }
+
+    /* ─────────────────────────────────────────────
+       Timeline section wrapper
+    ───────────────────────────────────────────── */
+    #timeline { padding: 20px 0 120px; }
+
+    .tl-side-labels {
+      display: flex;
+      max-width: 900px;
+      margin: 0 auto 12px;
+      padding: 0 24px;
+    }
+    .label-literary {
+      width: calc(50% - 80px);
+      text-align: right;
+      font-family: var(--font-main);
+      font-size: 0.72rem;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+    }
+    .label-professional {
+      margin-left: calc(50% + 80px);
+      font-family: var(--font-main);
+      font-size: 0.72rem;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+    }
+
+    /* Canvas: all entries + SVG live here */
+    #tl-canvas {
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* ─────────────────────────────────────────────
+       Entry cards
+    ───────────────────────────────────────────── */
+    .tl-entry {
+      position: absolute;
+      width: 270px;
+    }
+    .tl-entry.literary {
+      right: calc(50% + 80px);
+      text-align: right;
+    }
+    .tl-entry.professional {
+      left: calc(50% + 80px);
+      text-align: left;
+    }
+
+    .entry-year {
+      display: block;
+      font-family: var(--font-main);
+      font-size: 0.68rem;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      color: var(--ink-light);
+      margin-bottom: 3px;
+    }
+    .entry-title {
+      font-family: var(--font-main);
+      font-size: 0.88rem;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+    }
+    .tl-entry.literary .entry-title {
+      color: #6aafd4;
+    }
+    .entry-desc {
+      font-family: var(--font-main);
+      font-size: 0.82rem;
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--ink-mid);
+      margin-top: 2px;
+    }
+
+    /* Photo */
+    .photo-wrap {
+      display: inline-block;
+      margin-top: 10px;
+    }
+    .tl-entry.literary    .photo-wrap { transform: rotate(-2deg); }
+    .tl-entry.professional .photo-wrap { transform: rotate(1.5deg); }
+
+    .photo-wrap img {
+      display: block;
+      width: 175px;
+      height: 125px;
+      object-fit: cover;
+      /* no border — clean like the reference */
+    }
+
+    /* X-box placeholder shown when no photo is provided */
+    .photo-placeholder {
+      width: 175px;
+      height: 125px;
+      border: 1px solid var(--ink-light);
+      position: relative;
+      display: block;
+    }
+    .photo-placeholder svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Items list (awards / publications) */
+    .entry-items {
+      margin-top: 5px;
+      list-style: none;
+      padding: 0;
+    }
+    .entry-items li {
+      font-size: 0.72rem;
+      font-weight: 300;
+      line-height: 1.65;
+      color: var(--ink-mid);
+    }
+    .entry-items li.item-hidden { display: none; }
+
+    .entry-more {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      color: var(--ink-light);
+      margin-top: 4px;
+      cursor: pointer;
+      border-bottom: 1px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .entry-more:hover {
+      color: var(--ink);
+      border-bottom-color: var(--ink);
+    }
+
+    /* Annotation */
+    .entry-annotation {
+      display: inline-block;
+      font-family: var(--font-hand);
+      font-size: 0.82rem;
+      color: var(--ink-mid);
+      margin-top: 5px;
+    }
+    .tl-entry.literary    .entry-annotation { transform: rotate(-1.2deg); }
+    .tl-entry.professional .entry-annotation { transform: rotate(0.9deg);  }
+
+    @keyframes tlFadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to   { opacity: 1; transform: translateY(0);   }
+    }
+
+    /* ─────────────────────────────────────────────
+       Works / CV stubs
+    ───────────────────────────────────────────── */
+    .stub-section {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 80px 32px 120px;
+      text-align: center;
+    }
+    .stub-section h2 {
+      font-family: var(--font-main);
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+    .stub-section p {
+      font-family: var(--font-main);
+      font-size: 0.85rem;
+      font-weight: 300;
+      color: var(--ink-mid);
+      line-height: 1.9;
+    }
+    .stub-section a { color: var(--ink); }
+
+    /* ─────────────────────────────────────────────
+       Works page
+    ───────────────────────────────────────────── */
+    .works-content {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 80px 32px 120px;
+    }
+    .works-content > h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 52px;
+    }
+    .works-group { margin-bottom: 36px; }
+    .works-group-year {
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      margin-bottom: 10px;
+    }
+    .works-item {
+      display: flex;
+      flex-direction: column;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(39,35,32,0.08);
+    }
+    .works-item:last-child { border-bottom: none; }
+    .works-item-title {
+      font-size: 0.95rem;
+      font-style: italic;
+      font-weight: 400;
+    }
+    .works-item-venue {
+      font-size: 0.78rem;
+      font-weight: 300;
+      color: var(--ink-mid);
+      margin-top: 1px;
+    }
+    .works-item-note {
+      font-size: 0.68rem;
+      color: var(--ink-light);
+      margin-top: 1px;
+    }
+
+    /* CV download link */
+    .cv-download {
+      display: inline-block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: var(--ink);
+      border-bottom: 1px solid var(--ink);
+      text-decoration: none;
+      padding-bottom: 2px;
+      transition: opacity 0.15s;
+    }
+    .cv-download:hover { opacity: 0.5; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════
+     HEADER — edit your name and email here
+════════════════════════════════════════════════════════════ -->
+<header>
+  <a href="about.html" class="site-title">Amy Jane Wang</a>
+  <nav>
+    <a href="#timeline" class="active">timeline</a>
+    <a href="works.html">publications</a>
+
+    <a href="https://www.linkedin.com/in/amjwang/" target="_blank">linkedin</a>
+    <a href="https://amyjwang.substack.com/" target="_blank">substack</a>
+  </nav>
+</header>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     TIMELINE
+════════════════════════════════════════════════════════════ -->
+<section id="timeline">
+
+  <div id="tl-canvas"></div>
+</section>
+
+
+
+
+
+
+<!-- ════════════════════════════════════════════════════════════
+     SCRIPTS
+════════════════════════════════════════════════════════════ -->
+<script src="https://unpkg.com/roughjs@4.6.6/bundled/rough.js"></script>
+<script>
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  TIMELINE CONTENT — EDIT THIS SECTION TO UPDATE THE SITE   ║
+   ╚══════════════════════════════════════════════════════════════╝
+
+   Each entry is one item on the timeline. Fields:
+
+     year        — number, e.g. 2022
+     side        — "literary" (left)  or  "professional" (right)
+     title       — bold heading for this entry
+     desc        — optional small italic line below title (use "" to skip)
+     items       — optional list of bullet points, e.g.:
+                   items: ["first item", "second item"]
+                   Leave as [] or omit to skip.
+                   First 3 items show; the rest expand on click.
+     photo       — ""  (none)  |  "placeholder"  |  "photos/file.jpg"
+     annotation  — optional tiny hand-scrawled note (use "" to skip)
+*/
+
+const TIMELINE = [
+
+  /* ══ LITERARY (left) ══════════════════════════════════════════ */
+
+  {
+    year: 2020,
+    side: "literary",
+    title: "Mentee, The Adroit Journal Summer Mentorship Program",
+    desc: "Studied prose under Andrew Gretes",
+    items: [],
+    photo: "",
+    annotation: ""
+  },
+  {
+    year: 2021,
+    side: "literary",
+    title: "Mentee, Iowa Young Writers' Studio",
+    desc: "Studied poetry under Norah Claire Miller",
+    items: [],
+    photo: "",
+    annotation: ""
+  },
+  {
+    year: 2022,
+    side: "literary",
+    title: "Community Media Scholar, Alliance for Chinese Americans",
+    desc: "Advocated for AAPI communities through media and storytelling",
+    items: [],
+    photo: "",
+    annotation: ""
+  },
+  {
+    year: 2023,
+    side: "literary",
+    title: "Editorial Intern, Peach Mag",
+    desc: "Curated and edited submissions",
+    items: [],
+    photo: "",
+    annotation: ""
+  },
+  {
+    year: 2023,
+    side: "literary",
+    title: "Prose Editor, The Farside Review",
+    desc: "Curated fiction and prose",
+    items: [],
+    photo: "",
+    annotation: ""
+  },
+  {
+    year: 2025,
+    side: "literary",
+    title: "Mentor, San Diego Association of Chinese Americans Summer Journalism Program",
+    desc: "Mentored high school students in journalism",
+    items: [],
+    photo: "",
+    annotation: ""
+  },
+  {
+    year: 2025,
+    side: "literary",
+    title: "Editorial Intern, East of Borneo Magazine",
+    desc: "Edited content and publications",
+    items: [],
+    photo: "",
+    annotation: ""
+  },
+
+  /* ══ PROFESSIONAL (right) ═════════════════════════════════════ */
+
+  {
+    year: 2021,
+    side: "professional",
+    title: "Research Assistant, UCLA CRESST",
+    desc: "Researched Asian American education and income inequality",
+    items: [],
+    photo: "",
+    annotation: "",
+    extraGap: 15
+  },
+  {
+    year: 2021,
+    side: "professional",
+    title: "Communications Intern, Office of California State Assemblymember Phillip Chen",
+    desc: "Wrote editorials and supported community advocacy",
+    items: [],
+    photo: "",
+    annotation: "",
+    extraGap: 45
+  },
+  {
+    year: 2022,
+    side: "professional",
+    title: "Editor-in-Chief, Westview Nexus",
+    desc: "Led the publication and its editorial direction",
+    items: [],
+    photo: "",
+    annotation: ""
+  },
+  {
+    year: 2022,
+    side: "professional",
+    title: "Editorial Intern, The San Diego Union-Tribune",
+    desc: "Reported and contributed to the newsroom",
+    items: [],
+    photo: "",
+    annotation: ""
+  },
+  {
+    year: 2023,
+    side: "professional",
+    title: "Matriculated at Stanford University",
+    desc: "",
+    items: [],
+    photo: "",
+    annotation: ""
+  },
+  {
+    year: 2024,
+    side: "professional",
+    title: "Advancement and Analytics Intern, Sierra Club",
+    desc: "Supported fundraising operations and donor analytics",
+    items: [],
+    photo: "",
+    annotation: ""
+  },
+  {
+    year: 2025,
+    side: "professional",
+    title: "Intern, Pentagon Federal Credit Union",
+    desc: "Built AI integrations and operations infrastructure",
+    items: [],
+    photo: "",
+    annotation: ""
+  },
+  {
+    year: 2026,
+    side: "professional",
+    title: "Research Assistant @ Stanford's Virtual Human Interaction Lab",
+    desc: "",
+    items: [],
+    photo: "",
+    annotation: "",
+    extraGap: -70
+  },
+  {
+    year: 2026,
+    side: "professional",
+    title: "Incoming Summer Investment Banking Analyst, Barclays",
+    desc: "Joining the West Coast Financial Sponsors team",
+    items: [],
+    photo: "",
+    annotation: ""
+  },
+
+];
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  LAYOUT SETTINGS                                            ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+const SETTINGS = {
+  padTop:       70,   // px before first entry
+  padBottom:   100,   // px after last entry
+  minRowGap:   120,   // minimum vertical gap between entries on the same side
+  branchLen:    75,   // px the horizontal tick extends from center
+  dotDiameter:   8,   // px diameter of dot on center line
+  previewItems:  3,   // how many list items to show before "...and N more"
+};
+
+/* ─── Everything below this line runs automatically ──────────── */
+
+TIMELINE.sort((a, b) => a.year - b.year);
+
+function buildLayout(entries) {
+  const byYear = {};
+  entries.forEach(e => {
+    if (!byYear[e.year]) byYear[e.year] = { literary: [], professional: [] };
+    byYear[e.year][e.side].push({ ...e });
+  });
+
+  const sortedYears = Object.keys(byYear).map(Number).sort((a, b) => a - b);
+  let currentY = SETTINGS.padTop;
+  const allItems = [];
+  const yearPositions = [];
+
+  for (const year of sortedYears) {
+    yearPositions.push({ year, y: currentY });
+    const lit = byYear[year].literary;
+    const pro = byYear[year].professional;
+    const proOffset = lit.length > 0 ? 65 : 0;
+
+    if (lit[0]) lit[0].y = currentY;
+    if (pro[0]) pro[0].y = currentY + proOffset;
+
+    for (let i = 1; i < lit.length; i++) lit[i].y = lit[i-1].y + SETTINGS.minRowGap + (lit[i-1].extraGap || 0);
+    for (let i = 1; i < pro.length; i++) pro[i].y = pro[i-1].y + SETTINGS.minRowGap + (pro[i-1].extraGap || 0);
+
+    const litExtra = lit.reduce((s, e) => s + (e.extraGap || 0), 0);
+    const proExtra = pro.reduce((s, e) => s + (e.extraGap || 0), 0);
+    const litSpace = (lit.length * SETTINGS.minRowGap || SETTINGS.minRowGap) + litExtra;
+    const proSpace = proOffset + (pro.length * SETTINGS.minRowGap || SETTINGS.minRowGap) + proExtra;
+    currentY += Math.max(litSpace, proSpace);
+    allItems.push(...lit, ...pro);
+  }
+
+  return { items: allItems, height: currentY + SETTINGS.padBottom, yearPositions };
+}
+
+const { items, height, yearPositions } = buildLayout(TIMELINE);
+
+// CX must be known before building divs so we can derive entry positions from lineX
+const SVG_W = 220;
+const CX    = SVG_W / 2;
+
+// Pre-assign lineX to every item so entry positioning matches tick end
+items.filter(i => i.side === 'literary').sort((a, b) => a.y - b.y)
+  .forEach((item, i) => { item.lineX = CX + ((i % 2 === 0) ? -14 : 14); });
+items.filter(i => i.side === 'professional').sort((a, b) => a.y - b.y)
+  .forEach((item) => { item.lineX = CX; });
+
+// ── Build canvas ──────────────────────────────────────────────
+const canvas = document.getElementById('tl-canvas');
+canvas.style.height = height + 'px';
+
+for (const item of items) {
+  const el = document.createElement('div');
+  el.className = `tl-entry ${item.side}`;
+  // top: entry sits so that tick (item.y + 23) bisects the first text line (~9px from top)
+  el.style.top = (item.y + 14) + 'px';
+  // horizontal: align to own tick end, not a shared column
+  if (item.side === 'professional') {
+    el.style.left  = `calc(50% + ${(item.lineX - CX) + SETTINGS.branchLen + 5}px)`;
+  } else {
+    el.style.right = `calc(50% + ${(CX - item.lineX) + SETTINGS.branchLen + 5}px)`;
+  }
+  const entryDelay = (item.y / 1000).toFixed(2);
+  el.style.opacity = '0';
+  el.style.animation = `tlFadeIn 0.6s ease forwards ${entryDelay}s`;
+
+  let html = '';
+
+  // Title
+  if (item.title) html += `<div class="entry-title">${item.title}</div>`;
+
+  // Subtitle
+  if (item.desc) html += `<div class="entry-desc">${item.desc}</div>`;
+
+  // Items list
+  if (item.items && item.items.length > 0) {
+    html += '<ul class="entry-items">';
+    item.items.forEach((it, idx) => {
+      const hidden = idx >= SETTINGS.previewItems ? ' item-hidden' : '';
+      html += `<li class="${hidden}">${it}</li>`;
+    });
+    html += '</ul>';
+    if (item.items.length > SETTINGS.previewItems) {
+      const extra = item.items.length - SETTINGS.previewItems;
+      html += `<span class="entry-more">+ ${extra} more</span>`;
+    }
+  }
+
+  // Photo
+  if (item.photo === 'placeholder') {
+    html += `
+      <div class="photo-wrap">
+        <div class="photo-placeholder">
+          <svg viewBox="0 0 175 125" xmlns="http://www.w3.org/2000/svg" fill="none">
+            <line x1="2" y1="2"   x2="173" y2="123" stroke="#a09890" stroke-width="1"/>
+            <line x1="173" y1="2" x2="2"   y2="123" stroke="#a09890" stroke-width="1"/>
+          </svg>
+        </div>
+      </div>`;
+  } else if (item.photo) {
+    html += `
+      <div class="photo-wrap">
+        <img src="${item.photo}" alt="${item.title}" loading="lazy">
+      </div>`;
+  }
+
+  // Annotation
+  if (item.annotation) {
+    html += `<span class="entry-annotation">${item.annotation}</span>`;
+  }
+
+  el.innerHTML = html;
+
+  // Wire up "...and N more" toggle
+  const moreBtn = el.querySelector('.entry-more');
+  if (moreBtn) {
+    moreBtn.addEventListener('click', () => {
+      el.querySelectorAll('.item-hidden').forEach(li => li.classList.remove('item-hidden'));
+      moreBtn.remove();
+    });
+  }
+
+  canvas.appendChild(el);
+}
+
+// ── Draw rough SVG (center line, ticks, dots) ─────────────────
+const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+svg.setAttribute('width',  SVG_W);
+svg.setAttribute('height', height);
+Object.assign(svg.style, {
+  position:      'absolute',
+  top:           '0',
+  left:          '50%',
+  transform:     'translateX(-50%)',
+  overflow:      'visible',
+  pointerEvents: 'none',
+});
+canvas.appendChild(svg);
+
+const rc      = rough.svg(svg);
+const INK     = '#272320';
+const LIT_BLUE = '#6aafd4';
+const svgNS   = 'http://www.w3.org/2000/svg';
+
+// Main vertical line — straight black
+svg.appendChild(rc.line(
+  CX, SETTINGS.padTop - 20,
+  CX, height - SETTINGS.padBottom + 20,
+  { stroke: INK, strokeWidth: 1.2, roughness: 0.4, bowing: 0 }
+));
+
+// Blue dynamic curve — weaves through literary entry positions
+const litItems = items.filter(i => i.side === 'literary').sort((a, b) => a.y - b.y);
+if (litItems.length > 0) {
+  const litTop = litItems[0].y - 40;
+  const litBot = litItems[litItems.length - 1].y + 40;
+  const pts = [[CX, litTop]];
+  litItems.forEach((item) => {
+    pts.push([item.lineX, item.y + 23]);
+  });
+  pts.push([CX, litBot]);
+  svg.appendChild(rc.curve(pts, { stroke: LIT_BLUE, strokeWidth: 1.1, roughness: 1.2 }));
+}
+
+// Year labels — to the right of the line, at dot level
+for (const { year, y } of yearPositions) {
+  const label = document.createElementNS(svgNS, 'text');
+  label.setAttribute('x', CX + 14);
+  label.setAttribute('y', y + 4);
+  label.setAttribute('text-anchor', 'start');
+  label.setAttribute('font-family', "'Helvetica Neue', Helvetica, Arial, sans-serif");
+  label.setAttribute('font-size', '22');
+  label.setAttribute('font-style', 'italic');
+  label.setAttribute('letter-spacing', '0.5');
+  label.setAttribute('fill', '#a09890');
+  label.textContent = year;
+  const labelDelay = (y / 1000).toFixed(2);
+  label.style.opacity = '0';
+  label.style.animation = `tlFadeIn 0.6s ease forwards ${labelDelay}s`;
+  svg.appendChild(label);
+}
+
+function starPts(cx, cy, outerR, innerR, n, rotDeg) {
+  const rot = (rotDeg || 0) * Math.PI / 180;
+  const pts = [];
+  for (let i = 0; i < n * 2; i++) {
+    const angle = (i * Math.PI / n) - Math.PI / 2 + rot;
+    const r = i % 2 === 0 ? outerR : innerR;
+    pts.push([cx + r * Math.cos(angle), cy + r * Math.sin(angle)]);
+  }
+  return pts;
+}
+
+// Stars + branch ticks
+const starMarkers = [];
+let starIdx = 0;
+for (const item of items) {
+  const y        = item.y + 23;
+  const dir      = item.side === 'literary' ? -1 : 1;
+  const color    = item.side === 'literary' ? LIT_BLUE : INK;
+  const bg       = item.side === 'literary' ? '#eef6fb' : '#f0efeb';
+  const starX    = item.lineX || CX;
+  const svgDelay = (item.y / 1000).toFixed(2);
+  const rotDeg   = (starIdx * 19) % 45;
+  starIdx++;
+
+  const tick = rc.line(
+    starX, y,
+    starX + dir * SETTINGS.branchLen, y,
+    { stroke: color, strokeWidth: 1.0, roughness: 0.5, bowing: 0 }
+  );
+  tick.style.opacity = '0';
+  tick.style.animation = `tlFadeIn 0.6s ease forwards ${svgDelay}s`;
+  svg.appendChild(tick);
+
+  const star = rc.polygon(
+    starPts(starX, y, 7, 3, 8, rotDeg),
+    { stroke: color, strokeWidth: 1.0, fill: bg, fillStyle: 'solid', roughness: 0.8 }
+  );
+  star.style.opacity = '0';
+  star.style.animation = `tlFadeIn 0.6s ease forwards ${svgDelay}s`;
+  star.style.transition = 'filter 0.25s ease';
+  svg.appendChild(star);
+  starMarkers.push({ el: star, svgY: item.y + 23 });
+}
+
+// Glow: map scroll progress 0→1 directly to first→last star
+starMarkers.sort((a, b) => a.svgY - b.svgY);
+
+function updateGlow() {
+  const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  const t         = Math.max(0, Math.min(1, window.scrollY / maxScroll));
+  const idx       = Math.round(t * (starMarkers.length - 1));
+  const closest   = starMarkers[idx].el;
+  for (const { el } of starMarkers) {
+    el.style.filter = el === closest
+      ? 'drop-shadow(0 0 3px #ffd700) drop-shadow(0 0 10px #ffd700) drop-shadow(0 0 20px #ffaa00)'
+      : '';
+  }
+}
+window.addEventListener('scroll', updateGlow, { passive: true });
+window.addEventListener('load', updateGlow);
+
+// Constrain timeline to the same horizontal span as the nav links
+(function applyNavMargins() {
+  const links    = document.querySelectorAll('nav a');
+  const navLeft  = links[0].getBoundingClientRect().left;
+  const navRight = links[links.length - 1].getBoundingClientRect().right;
+  const navWidth = navRight - navLeft;
+  [document.querySelector('.tl-side-labels'), document.getElementById('tl-canvas')].forEach(el => {
+    el.style.maxWidth    = navWidth + 'px';
+    el.style.marginLeft  = navLeft + 'px';
+    el.style.marginRight = '0';
+  });
+})();
+
+</script>
+</body>
+</html>
