@@ -720,6 +720,47 @@ function render() {
   const LIT_BLUE = '#6aafd4';
   const svgNS    = 'http://www.w3.org/2000/svg';
 
+  // Crayon filter: fractal noise displaces + erodes the stroke edges
+  const defs = document.createElementNS(svgNS, 'defs');
+  const filt = document.createElementNS(svgNS, 'filter');
+  filt.setAttribute('id', 'crayon');
+  filt.setAttribute('x', '-15%'); filt.setAttribute('y', '-5%');
+  filt.setAttribute('width', '130%'); filt.setAttribute('height', '110%');
+  // Step 1: generate grain noise
+  const turb = document.createElementNS(svgNS, 'feTurbulence');
+  turb.setAttribute('type', 'fractalNoise');
+  turb.setAttribute('baseFrequency', '0.85');
+  turb.setAttribute('numOctaves', '4');
+  turb.setAttribute('result', 'noise');
+  // Step 2: threshold noise into a sparse grain mask
+  const cm = document.createElementNS(svgNS, 'feColorMatrix');
+  cm.setAttribute('type', 'matrix');
+  cm.setAttribute('values', '0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 22 -8');
+  cm.setAttribute('in', 'noise');
+  cm.setAttribute('result', 'grain');
+  // Step 3: cut grain mask out of the stroke
+  const comp = document.createElementNS(svgNS, 'feComposite');
+  comp.setAttribute('operator', 'in');
+  comp.setAttribute('in', 'SourceGraphic');
+  comp.setAttribute('in2', 'grain');
+  comp.setAttribute('result', 'textured');
+  // Step 4: displace edges for roughness
+  const turb2 = document.createElementNS(svgNS, 'feTurbulence');
+  turb2.setAttribute('type', 'fractalNoise');
+  turb2.setAttribute('baseFrequency', '0.04');
+  turb2.setAttribute('numOctaves', '2');
+  turb2.setAttribute('result', 'wave');
+  const disp = document.createElementNS(svgNS, 'feDisplacementMap');
+  disp.setAttribute('in', 'textured');
+  disp.setAttribute('in2', 'wave');
+  disp.setAttribute('scale', '6');
+  disp.setAttribute('xChannelSelector', 'R');
+  disp.setAttribute('yChannelSelector', 'G');
+  filt.appendChild(turb); filt.appendChild(cm); filt.appendChild(comp);
+  filt.appendChild(turb2); filt.appendChild(disp);
+  defs.appendChild(filt);
+  svg.appendChild(defs);
+
   const lineEnd = totalHeight - SETTINGS.padBottom + 20;
 
   svg.appendChild(rc.line(
@@ -732,14 +773,17 @@ function render() {
     const pts = [[CX, litItems[0].y - 40]];
     litItems.forEach(item => pts.push([item.lineX, item.y + 23]));
     pts.push([CX, lineEnd]);
-    for (let pass = 0; pass < 3; pass++) {
+    const crayonG = document.createElementNS(svgNS, 'g');
+    crayonG.setAttribute('filter', 'url(#crayon)');
+    for (let pass = 0; pass < 4; pass++) {
       const stroke = rc.curve(pts, {
-        stroke: LIT_BLUE, strokeWidth: 5, roughness: 2.8,
-        bowing: 0.5, disableMultiStroke: true,
+        stroke: LIT_BLUE, strokeWidth: 7, roughness: 2.2,
+        bowing: 0.4, disableMultiStroke: true,
       });
-      stroke.style.opacity = '0.42';
-      svg.appendChild(stroke);
+      stroke.style.opacity = '0.35';
+      crayonG.appendChild(stroke);
     }
+    svg.appendChild(crayonG);
   }
 
   // Ellipsis dots at the bottom of both lines
