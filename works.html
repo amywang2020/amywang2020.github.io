@@ -4,9 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Publications — Amy Jane Wang</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap" rel="stylesheet">
+
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -18,7 +16,6 @@
       --ink-mid:    #6b6560;
       --ink-light:  #a09890;
       --font-main:  'Helvetica Neue', Helvetica, Arial, sans-serif;
-      --font-hand:  'Caveat', cursive;
     }
 
     body {
@@ -43,7 +40,7 @@
     nav {
       display: flex;
       justify-content: center;
-      gap: clamp(20px, 4vw, 52px);
+      gap: clamp(28px, 6vw, 88px);
       margin-top: 36px;
     }
     nav a {
@@ -90,6 +87,8 @@
       border-bottom: 1px solid rgba(39,35,32,0.07);
     }
     .works-item:last-child { border-bottom: none; }
+    .works-item { opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(5px); }
+    .works-item.visible { opacity: 1; transform: translateY(0); }
 
     .works-item-line {
       font-size: 0.88rem;
@@ -187,5 +186,11 @@
 
 </main>
 
+<script>
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, { threshold: 0.05 });
+  document.querySelectorAll('.works-item').forEach(el => obs.observe(el));
+</script>
 </body>
 </html>

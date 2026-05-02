@@ -4,10 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Amy Jane Wang</title>
-  <!-- Caveat kept only for hand-drawn annotations -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap" rel="stylesheet">
 
   <style>
     /* ─────────────────────────────────────────────
@@ -19,7 +15,6 @@
       --ink-mid:      #6b6560;   /* secondary text color  */
       --ink-light:    #a09890;   /* year labels, faint text */
       --font-main:    'Helvetica Neue', Helvetica, Arial, sans-serif;
-      --font-hand:    'Caveat', cursive;  /* annotations only */
     }
 
     /* ─────────────────────────────────────────────
@@ -225,7 +220,7 @@
     /* Annotation */
     .entry-annotation {
       display: inline-block;
-      font-family: var(--font-hand);
+      font-family: var(--font-main);
       font-size: 0.82rem;
       color: var(--ink-mid);
       margin-top: 5px;
@@ -234,8 +229,11 @@
     .tl-entry.professional .entry-annotation { transform: rotate(0.9deg);  }
 
     @keyframes tlFadeIn {
-      from { opacity: 0; transform: translateY(5px); }
+      from { opacity: 0; transform: translateY(6px); }
       to   { opacity: 1; transform: translateY(0);   }
+    }
+    .tl-reveal {
+      animation: tlFadeIn 0.5s ease forwards;
     }
 
     /* ─────────────────────────────────────────────
@@ -696,8 +694,7 @@ function render() {
     const delay = (item.y / 1000).toFixed(2);
     el.style.top        = (item.y + 14) + 'px';
     el.style.visibility = '';
-    el.style.opacity    = '0';
-    el.style.animation  = `tlFadeIn 0.6s ease forwards ${delay}s`;
+    el.style.opacity = '0';
 
     const moreBtn = el.querySelector('.entry-more');
     if (moreBtn) {
@@ -758,8 +755,7 @@ function render() {
     label.setAttribute('letter-spacing', '0.5');
     label.setAttribute('fill', '#a09890');
     label.textContent = year;
-    label.style.opacity   = '0';
-    label.style.animation = `tlFadeIn 0.6s ease forwards ${(y / 1000).toFixed(2)}s`;
+    label.style.opacity = '0';
     svg.appendChild(label);
   }
 
@@ -780,13 +776,11 @@ function render() {
     const tick = rc.line(starX, y, starX + dir * tickLen, y,
       { stroke: color, strokeWidth: 1.0, roughness: 0.5, bowing: 0 });
     tick.style.opacity = '0';
-    tick.style.animation = `tlFadeIn 0.6s ease forwards ${delay}s`;
     svg.appendChild(tick);
 
-    const star = rc.polygon(starPts(starX, y, 7, 3, 8, rotDeg),
+    const star = rc.polygon(starPts(starX, y, 14, 6, 5, rotDeg),
       { stroke: color, strokeWidth: 1.0, fill: bg, fillStyle: 'solid', roughness: 0.8 });
-    star.style.opacity   = '0';
-    star.style.animation = `tlFadeIn 0.6s ease forwards ${delay}s`;
+    star.style.opacity = '0';
     star.style.transition = 'filter 0.25s ease';
     svg.appendChild(star);
     starMarkers.push({ el: star, svgY: y });
@@ -810,10 +804,27 @@ function render() {
   scrollHandler();
 }
 
-window.addEventListener('load', render);
+let tlObserver = null;
+
+function setupObserver() {
+  if (tlObserver) tlObserver.disconnect();
+  const targets = document.querySelectorAll('.tl-entry, #tl-canvas svg text, #tl-canvas svg g');
+  tlObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('tl-reveal');
+        entry.target.style.opacity = '';
+        tlObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.01, rootMargin: '0px 0px -20px 0px' });
+  targets.forEach(el => tlObserver.observe(el));
+}
+
+window.addEventListener('load', () => { render(); setupObserver(); });
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(render, 150);
+  resizeTimer = setTimeout(() => { render(); setupObserver(); }, 150);
 });
 
 </script>

@@ -4,9 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Amy Jane Wang</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap" rel="stylesheet">
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -44,7 +41,7 @@
     nav {
       display: flex;
       justify-content: center;
-      gap: clamp(20px, 4vw, 52px);
+      gap: clamp(28px, 6vw, 88px);
       margin-top: 36px;
     }
     nav a {
@@ -156,7 +153,7 @@
 
     // Cell size fits 3 columns within nav width; font scales with it
     const S        = Math.floor((navWidth - (COLS - 1) * G) / COLS);
-    const fontSize = Math.max(9, Math.round(S * 0.072)) + 'px';
+    const fontSize = (Math.max(9, Math.round(S * 0.072)) + 2) + 'px';
 
     // 9 cells: 1 bio + 1 blank + 1 pinned photo + 6 random others, all shuffled
     const pinned  = 'photos/photo.png';
@@ -165,6 +162,8 @@
 
     const gLeft = navLeft;
     const gTop  = 36;
+
+    const punchedStars = [];
 
     items.forEach((item, i) => {
       const col  = i % COLS;
@@ -188,17 +187,101 @@
         stage.appendChild(cell);
         requestAnimationFrame(() => cell.classList.add('loaded'));
       } else {
-        const img = document.createElement('img');
-        img.className = 'scatter-photo';
-        img.alt = '';
-        img.style.width  = S + 'px';
-        img.style.height = S + 'px';
-        img.style.left   = left + 'px';
-        img.style.top    = top  + 'px';
-        img.onload = () => img.classList.add('loaded');
-        img.src = item;
-        stage.appendChild(img);
+        // SVG wrapper so we can punch star-shaped holes via a mask
+        const uid = `m${i}${Math.random().toString(36).slice(2,6)}`;
+        const svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svgEl.setAttribute('class', 'scatter-photo'); // setAttribute required for SVG elements
+        svgEl.setAttribute('width',  S);
+        svgEl.setAttribute('height', S);
+        svgEl.style.left = left + 'px';
+        svgEl.style.top  = top  + 'px';
+
+        // Build mask: white rect (show photo) minus black stars (punch holes)
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        const mask = document.createElementNS('http://www.w3.org/2000/svg', 'mask');
+        mask.setAttribute('id', uid);
+        const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        bg.setAttribute('width', S); bg.setAttribute('height', S);
+        bg.setAttribute('fill', 'white');
+        mask.appendChild(bg);
+
+        const numHoles = 1 + Math.floor(Math.random() * 2);
+        for (let h = 0; h < numHoles; h++) {
+          const r1     = S * 0.09;
+          const r2     = r1 * 0.42;
+          const hx     = S * (0.18 + Math.random() * 0.64);
+          const hy     = S * (0.18 + Math.random() * 0.64);
+          const rotDeg = Math.random() * 360;
+          const hole   = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+          hole.setAttribute('points', starPts(hx, hy, r1, r2, 5, rotDeg));
+          hole.setAttribute('fill', 'black');
+          mask.appendChild(hole);
+          // Remember for scattered stars
+          punchedStars.push({ x: left + hx, y: top + hy, r1, r2, rotDeg });
+        }
+        defs.appendChild(mask);
+        svgEl.appendChild(defs);
+
+        const imgEl = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        imgEl.setAttribute('width',  S);
+        imgEl.setAttribute('height', S);
+        imgEl.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+        imgEl.setAttribute('mask', `url(#${uid})`);
+        imgEl.addEventListener('load', () => svgEl.classList.add('loaded'));
+        imgEl.setAttribute('href', item);
+        svgEl.appendChild(imgEl);
+        stage.appendChild(svgEl);
       }
+    });
+
+    scatterStars(gLeft, gTop, S, punchedStars);
+  }
+
+  const BLUE = '#6aafd4';
+
+  function starPts(cx, cy, r1, r2, n, rotDeg) {
+    const rot = (rotDeg || 0) * Math.PI / 180;
+    return Array.from({ length: n * 2 }, (_, i) => {
+      const a = (i * Math.PI / n) - Math.PI / 2 + rot;
+      const r = i % 2 === 0 ? r1 : r2;
+      return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`;
+    }).join(' ');
+  }
+
+  function scatterStars(gLeft, gTop, S, punchedStars) {
+    const stage  = document.getElementById('stage');
+    const gridH  = ROWS * (S + G) - G;
+    const stageW = stage.offsetWidth || window.innerWidth;
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    Object.assign(svg.style, {
+      position: 'absolute', left: '0', top: '0',
+      width: stageW + 'px', height: (gTop + gridH + 80) + 'px',
+      overflow: 'visible', pointerEvents: 'none', zIndex: '3',
+    });
+    stage.appendChild(svg);
+
+    // Each punched hole becomes a scattered star displaced from its origin
+    punchedStars.forEach(({ x, y, r1, r2, rotDeg }) => {
+      const dist  = S * (0.4 + Math.random() * 1.8);
+      const angle = Math.random() * Math.PI * 2;
+      const sx    = x + Math.cos(angle) * dist;
+      const sy    = y + Math.sin(angle) * dist;
+      const sr1   = r1 * (0.75 + Math.random() * 0.5);
+      const op    = (0.45 + Math.random() * 0.45).toFixed(2);
+
+      const star = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      star.setAttribute('points', starPts(sx, sy, sr1, sr1 * 0.42, 5, rotDeg + (Math.random() - 0.5) * 25));
+      if (Math.random() > 0.4) {
+        star.setAttribute('fill', BLUE);
+        star.setAttribute('opacity', op);
+      } else {
+        star.setAttribute('fill', 'none');
+        star.setAttribute('stroke', BLUE);
+        star.setAttribute('stroke-width', '1.1');
+        star.setAttribute('opacity', op);
+      }
+      svg.appendChild(star);
     });
   }
 
