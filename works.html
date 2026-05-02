@@ -66,6 +66,7 @@
       max-width: 480px;
       margin: 0 auto;
       padding: 64px 32px 160px;
+      position: relative;
     }
 
     .works-group {
@@ -169,7 +170,7 @@
       <span class="works-item-line"><em>Ghosting</em> (in print) in Capsule Stories</span>
       <span class="works-item-note">nominated for Best American Short Stories</span>
     </div>
-    <div class="works-item">
+    <div class="works-item" data-mark="circle">
       <span class="works-item-line"><a href="https://sinetheta.net/20.html" target="_blank"><em>Ama</em></a> in Sine Theta Magazine</span>
       <span class="works-item-note">Spotlighted Selection, Best Small Fictions 2022</span>
     </div>
@@ -186,11 +187,123 @@
 
 </main>
 
+<script src="https://unpkg.com/roughjs@4.6.6/bundled/rough.js"></script>
 <script>
   const obs = new IntersectionObserver((entries) => {
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
   }, { threshold: 0.05 });
   document.querySelectorAll('.works-item').forEach(el => obs.observe(el));
+
+  const LIT_BLUE = '#6aafd4';
+  const svgNS = 'http://www.w3.org/2000/svg';
+
+function makeCrayonFilter(id) {
+    const filt = document.createElementNS(svgNS, 'filter');
+    filt.setAttribute('id', id);
+    filt.setAttribute('x', '-20%'); filt.setAttribute('y', '-40%');
+    filt.setAttribute('width', '140%'); filt.setAttribute('height', '180%');
+    const turb = document.createElementNS(svgNS, 'feTurbulence');
+    turb.setAttribute('type', 'fractalNoise');
+    turb.setAttribute('baseFrequency', '0.85');
+    turb.setAttribute('numOctaves', '4');
+    turb.setAttribute('result', 'noise');
+    const cm = document.createElementNS(svgNS, 'feColorMatrix');
+    cm.setAttribute('type', 'matrix');
+    cm.setAttribute('values', '0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 22 -8');
+    cm.setAttribute('in', 'noise'); cm.setAttribute('result', 'grain');
+    const comp = document.createElementNS(svgNS, 'feComposite');
+    comp.setAttribute('operator', 'in');
+    comp.setAttribute('in', 'SourceGraphic'); comp.setAttribute('in2', 'grain');
+    comp.setAttribute('result', 'textured');
+    const turb2 = document.createElementNS(svgNS, 'feTurbulence');
+    turb2.setAttribute('type', 'fractalNoise');
+    turb2.setAttribute('baseFrequency', '0.04');
+    turb2.setAttribute('numOctaves', '2');
+    turb2.setAttribute('result', 'wave');
+    const disp = document.createElementNS(svgNS, 'feDisplacementMap');
+    disp.setAttribute('in', 'textured'); disp.setAttribute('in2', 'wave');
+    disp.setAttribute('scale', '5');
+    disp.setAttribute('xChannelSelector', 'R'); disp.setAttribute('yChannelSelector', 'G');
+    filt.appendChild(turb); filt.appendChild(cm); filt.appendChild(comp);
+    filt.appendChild(turb2); filt.appendChild(disp);
+    return filt;
+  }
+
+  function drawAnnotations() {
+    const existing = document.getElementById('works-annotations');
+    if (existing) existing.remove();
+
+    const container = document.querySelector('.works-content');
+
+    const cRect  = container.getBoundingClientRect();
+    const labels = document.querySelectorAll('.works-group-label');
+
+    // Measure actual text width via Range (label is block-width, text is narrower)
+    function textRect(el) {
+      const r = document.createRange();
+      r.selectNodeContents(el);
+      return r.getBoundingClientRect();
+    }
+    const pRect  = textRect(labels[0]);
+    const prRect = textRect(labels[1]);
+
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.id = 'works-annotations';
+    svg.setAttribute('width', container.offsetWidth);
+    svg.setAttribute('height', container.offsetHeight);
+    Object.assign(svg.style, {
+      position: 'absolute', top: '0', left: '0',
+      overflow: 'visible', pointerEvents: 'none', zIndex: '5',
+    });
+
+    const defs = document.createElementNS(svgNS, 'defs');
+    defs.appendChild(makeCrayonFilter('wk-crayon'));
+    svg.appendChild(defs);
+    container.appendChild(svg);
+
+    const rc = rough.svg(svg);
+
+    // Underlines under section headers
+    function drawUnderline(textR) {
+      const x1 = textR.left - cRect.left - 2;
+      const x2 = textR.left - cRect.left + textR.width + 2;
+      const y  = textR.top  - cRect.top  + textR.height + 5;
+      const g  = document.createElementNS(svgNS, 'g');
+      g.setAttribute('filter', 'url(#wk-crayon)');
+      for (let i = 0; i < 3; i++) {
+        const el = rc.line(x1, y, x2, y, {
+          stroke: LIT_BLUE, strokeWidth: 4, roughness: 1.8, disableMultiStroke: true,
+        });
+        el.style.opacity = '0.4';
+        g.appendChild(el);
+      }
+      svg.appendChild(g);
+    }
+    drawUnderline(pRect);
+    drawUnderline(prRect);
+
+    // Circle around the Ama first line (text-fitted)
+    const amaItem = container.querySelector('[data-mark="circle"]');
+    if (amaItem) {
+      const tRect = textRect(amaItem.querySelector('.works-item-line'));
+      const cx = tRect.left - cRect.left + tRect.width / 2;
+      const cy = tRect.top  - cRect.top  + tRect.height / 2;
+      const circleG = document.createElementNS(svgNS, 'g');
+      circleG.setAttribute('filter', 'url(#wk-crayon)');
+      for (let i = 0; i < 3; i++) {
+        const el = rc.ellipse(cx, cy, tRect.width + 28, tRect.height + 16, {
+          stroke: LIT_BLUE, strokeWidth: 4, roughness: 2.5,
+          fill: 'none', disableMultiStroke: true,
+        });
+        el.style.opacity = '0.4';
+        circleG.appendChild(el);
+      }
+      svg.appendChild(circleG);
+    }
+  }
+
+  window.addEventListener('load', drawAnnotations);
+  window.addEventListener('resize', drawAnnotations);
 </script>
 </body>
 </html>

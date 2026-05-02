@@ -777,10 +777,10 @@ function render() {
     crayonG.setAttribute('filter', 'url(#crayon)');
     for (let pass = 0; pass < 4; pass++) {
       const stroke = rc.curve(pts, {
-        stroke: LIT_BLUE, strokeWidth: 7, roughness: 2.2,
+        stroke: LIT_BLUE, strokeWidth: 4, roughness: 2.2,
         bowing: 0.4, disableMultiStroke: true,
       });
-      stroke.style.opacity = '0.35';
+      stroke.style.opacity = '0.4';
       crayonG.appendChild(stroke);
     }
     svg.appendChild(crayonG);
