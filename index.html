@@ -57,7 +57,7 @@
     nav {
       display: flex;
       justify-content: center;
-      gap: clamp(20px, 4vw, 52px);
+      gap: clamp(28px, 6vw, 88px);
       margin-top: 36px;
     }
     nav a {
@@ -431,6 +431,15 @@ const TIMELINE = [
   {
     year: 2025,
     side: "literary",
+    title: "Mentee, Levinthal Tutorial",
+    desc: "Studied poetry under Dāshaun Washington",
+    items: [],
+    photo: "",
+    annotation: ""
+  },
+  {
+    year: 2025,
+    side: "literary",
     title: "Mentor, San Diego Association of Chinese Americans Summer Journalism Program",
     desc: "Mentored high school students in journalism",
     items: [],
@@ -467,7 +476,7 @@ const TIMELINE = [
     items: [],
     photo: "",
     annotation: "",
-    extraGap: 45
+    extraGap: 0
   },
   {
     year: 2022,
@@ -553,81 +562,19 @@ const SETTINGS = {
 
 TIMELINE.sort((a, b) => a.year - b.year);
 
-function buildLayout(entries) {
-  const byYear = {};
-  entries.forEach(e => {
-    if (!byYear[e.year]) byYear[e.year] = { literary: [], professional: [] };
-    byYear[e.year][e.side].push({ ...e });
-  });
-
-  const sortedYears = Object.keys(byYear).map(Number).sort((a, b) => a - b);
-  let currentY = SETTINGS.padTop;
-  const allItems = [];
-  const yearPositions = [];
-
-  for (const year of sortedYears) {
-    yearPositions.push({ year, y: currentY });
-    const lit = byYear[year].literary;
-    const pro = byYear[year].professional;
-    const proOffset = lit.length > 0 ? 65 : 0;
-
-    if (lit[0]) lit[0].y = currentY;
-    if (pro[0]) pro[0].y = currentY + proOffset;
-
-    for (let i = 1; i < lit.length; i++) lit[i].y = lit[i-1].y + SETTINGS.minRowGap + (lit[i-1].extraGap || 0);
-    for (let i = 1; i < pro.length; i++) pro[i].y = pro[i-1].y + SETTINGS.minRowGap + (pro[i-1].extraGap || 0);
-
-    const litExtra = lit.reduce((s, e) => s + (e.extraGap || 0), 0);
-    const proExtra = pro.reduce((s, e) => s + (e.extraGap || 0), 0);
-    const litSpace = (lit.length * SETTINGS.minRowGap || SETTINGS.minRowGap) + litExtra;
-    const proSpace = proOffset + (pro.length * SETTINGS.minRowGap || SETTINGS.minRowGap) + proExtra;
-    currentY += Math.max(litSpace, proSpace);
-    allItems.push(...lit, ...pro);
-  }
-
-  return { items: allItems, height: currentY + SETTINGS.padBottom, yearPositions };
-}
-
-const { items, height, yearPositions } = buildLayout(TIMELINE);
-
-// CX must be known before building divs so we can derive entry positions from lineX
 const SVG_W = 220;
 const CX    = SVG_W / 2;
 
-// Pre-assign lineX to every item so entry positioning matches tick end
-items.filter(i => i.side === 'literary').sort((a, b) => a.y - b.y)
+// Assign lineX offsets by order (independent of y, so stable across re-renders)
+TIMELINE.filter(i => i.side === 'literary')
   .forEach((item, i) => { item.lineX = CX + ((i % 2 === 0) ? -14 : 14); });
-items.filter(i => i.side === 'professional').sort((a, b) => a.y - b.y)
-  .forEach((item) => { item.lineX = CX; });
+TIMELINE.filter(i => i.side === 'professional')
+  .forEach(item => { item.lineX = CX; });
 
-// ── Build canvas ──────────────────────────────────────────────
-const canvas = document.getElementById('tl-canvas');
-canvas.style.height = height + 'px';
-
-for (const item of items) {
-  const el = document.createElement('div');
-  el.className = `tl-entry ${item.side}`;
-  // top: entry sits so that tick (item.y + 23) bisects the first text line (~9px from top)
-  el.style.top = (item.y + 14) + 'px';
-  // horizontal: align to own tick end, not a shared column
-  if (item.side === 'professional') {
-    el.style.left  = `calc(50% + ${(item.lineX - CX) + SETTINGS.branchLen + 5}px)`;
-  } else {
-    el.style.right = `calc(50% + ${(CX - item.lineX) + SETTINGS.branchLen + 5}px)`;
-  }
-  const entryDelay = (item.y / 1000).toFixed(2);
-  el.style.opacity = '0';
-  el.style.animation = `tlFadeIn 0.6s ease forwards ${entryDelay}s`;
-
+function buildEntryHTML(item) {
   let html = '';
-
-  // Title
   if (item.title) html += `<div class="entry-title">${item.title}</div>`;
-
-  // Subtitle
-  if (item.desc) html += `<div class="entry-desc">${item.desc}</div>`;
-
-  // Items list
+  if (item.desc)  html += `<div class="entry-desc">${item.desc}</div>`;
   if (item.items && item.items.length > 0) {
     html += '<ul class="entry-items">';
     item.items.forEach((it, idx) => {
@@ -640,99 +587,17 @@ for (const item of items) {
       html += `<span class="entry-more">+ ${extra} more</span>`;
     }
   }
-
-  // Photo
   if (item.photo === 'placeholder') {
-    html += `
-      <div class="photo-wrap">
-        <div class="photo-placeholder">
-          <svg viewBox="0 0 175 125" xmlns="http://www.w3.org/2000/svg" fill="none">
-            <line x1="2" y1="2"   x2="173" y2="123" stroke="#a09890" stroke-width="1"/>
-            <line x1="173" y1="2" x2="2"   y2="123" stroke="#a09890" stroke-width="1"/>
-          </svg>
-        </div>
-      </div>`;
+    html += `<div class="photo-wrap"><div class="photo-placeholder">
+      <svg viewBox="0 0 175 125" xmlns="http://www.w3.org/2000/svg" fill="none">
+        <line x1="2" y1="2" x2="173" y2="123" stroke="#a09890" stroke-width="1"/>
+        <line x1="173" y1="2" x2="2" y2="123" stroke="#a09890" stroke-width="1"/>
+      </svg></div></div>`;
   } else if (item.photo) {
-    html += `
-      <div class="photo-wrap">
-        <img src="${item.photo}" alt="${item.title}" loading="lazy">
-      </div>`;
+    html += `<div class="photo-wrap"><img src="${item.photo}" alt="${item.title}" loading="lazy"></div>`;
   }
-
-  // Annotation
-  if (item.annotation) {
-    html += `<span class="entry-annotation">${item.annotation}</span>`;
-  }
-
-  el.innerHTML = html;
-
-  // Wire up "...and N more" toggle
-  const moreBtn = el.querySelector('.entry-more');
-  if (moreBtn) {
-    moreBtn.addEventListener('click', () => {
-      el.querySelectorAll('.item-hidden').forEach(li => li.classList.remove('item-hidden'));
-      moreBtn.remove();
-    });
-  }
-
-  canvas.appendChild(el);
-}
-
-// ── Draw rough SVG (center line, ticks, dots) ─────────────────
-const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-svg.setAttribute('width',  SVG_W);
-svg.setAttribute('height', height);
-Object.assign(svg.style, {
-  position:      'absolute',
-  top:           '0',
-  left:          '50%',
-  transform:     'translateX(-50%)',
-  overflow:      'visible',
-  pointerEvents: 'none',
-});
-canvas.appendChild(svg);
-
-const rc      = rough.svg(svg);
-const INK     = '#272320';
-const LIT_BLUE = '#6aafd4';
-const svgNS   = 'http://www.w3.org/2000/svg';
-
-// Main vertical line — straight black
-svg.appendChild(rc.line(
-  CX, SETTINGS.padTop - 20,
-  CX, height - SETTINGS.padBottom + 20,
-  { stroke: INK, strokeWidth: 1.2, roughness: 0.4, bowing: 0 }
-));
-
-// Blue dynamic curve — weaves through literary entry positions
-const litItems = items.filter(i => i.side === 'literary').sort((a, b) => a.y - b.y);
-if (litItems.length > 0) {
-  const litTop = litItems[0].y - 40;
-  const litBot = litItems[litItems.length - 1].y + 40;
-  const pts = [[CX, litTop]];
-  litItems.forEach((item) => {
-    pts.push([item.lineX, item.y + 23]);
-  });
-  pts.push([CX, litBot]);
-  svg.appendChild(rc.curve(pts, { stroke: LIT_BLUE, strokeWidth: 1.1, roughness: 1.2 }));
-}
-
-// Year labels — to the right of the line, at dot level
-for (const { year, y } of yearPositions) {
-  const label = document.createElementNS(svgNS, 'text');
-  label.setAttribute('x', CX + 14);
-  label.setAttribute('y', y + 4);
-  label.setAttribute('text-anchor', 'start');
-  label.setAttribute('font-family', "'Helvetica Neue', Helvetica, Arial, sans-serif");
-  label.setAttribute('font-size', '22');
-  label.setAttribute('font-style', 'italic');
-  label.setAttribute('letter-spacing', '0.5');
-  label.setAttribute('fill', '#a09890');
-  label.textContent = year;
-  const labelDelay = (y / 1000).toFixed(2);
-  label.style.opacity = '0';
-  label.style.animation = `tlFadeIn 0.6s ease forwards ${labelDelay}s`;
-  svg.appendChild(label);
+  if (item.annotation) html += `<span class="entry-annotation">${item.annotation}</span>`;
+  return html;
 }
 
 function starPts(cx, cy, outerR, innerR, n, rotDeg) {
@@ -746,68 +611,210 @@ function starPts(cx, cy, outerR, innerR, n, rotDeg) {
   return pts;
 }
 
-// Stars + branch ticks
-const starMarkers = [];
-let starIdx = 0;
-for (const item of items) {
-  const y        = item.y + 23;
-  const dir      = item.side === 'literary' ? -1 : 1;
-  const color    = item.side === 'literary' ? LIT_BLUE : INK;
-  const bg       = item.side === 'literary' ? '#eef6fb' : '#f0efeb';
-  const starX    = item.lineX || CX;
-  const svgDelay = (item.y / 1000).toFixed(2);
-  const rotDeg   = (starIdx * 19) % 45;
-  starIdx++;
+let scrollHandler = null;
+let resizeTimer;
 
-  const tick = rc.line(
-    starX, y,
-    starX + dir * SETTINGS.branchLen, y,
-    { stroke: color, strokeWidth: 1.0, roughness: 0.5, bowing: 0 }
-  );
-  tick.style.opacity = '0';
-  tick.style.animation = `tlFadeIn 0.6s ease forwards ${svgDelay}s`;
-  svg.appendChild(tick);
+function render() {
+  const canvas = document.getElementById('tl-canvas');
+  canvas.innerHTML = '';
 
-  const star = rc.polygon(
-    starPts(starX, y, 7, 3, 8, rotDeg),
-    { stroke: color, strokeWidth: 1.0, fill: bg, fillStyle: 'solid', roughness: 0.8 }
-  );
-  star.style.opacity = '0';
-  star.style.animation = `tlFadeIn 0.6s ease forwards ${svgDelay}s`;
-  star.style.transition = 'filter 0.25s ease';
-  svg.appendChild(star);
-  starMarkers.push({ el: star, svgY: item.y + 23 });
-}
-
-// Glow: map scroll progress 0→1 directly to first→last star
-starMarkers.sort((a, b) => a.svgY - b.svgY);
-
-function updateGlow() {
-  const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-  const t         = Math.max(0, Math.min(1, window.scrollY / maxScroll));
-  const idx       = Math.round(t * (starMarkers.length - 1));
-  const closest   = starMarkers[idx].el;
-  for (const { el } of starMarkers) {
-    el.style.filter = el === closest
-      ? 'drop-shadow(0 0 3px #ffd700) drop-shadow(0 0 10px #ffd700) drop-shadow(0 0 20px #ffaa00)'
-      : '';
-  }
-}
-window.addEventListener('scroll', updateGlow, { passive: true });
-window.addEventListener('load', updateGlow);
-
-// Constrain timeline to the same horizontal span as the nav links
-(function applyNavMargins() {
-  const links    = document.querySelectorAll('nav a');
-  const navLeft  = links[0].getBoundingClientRect().left;
-  const navRight = links[links.length - 1].getBoundingClientRect().right;
+  // Apply nav margins
+  const navLinks = document.querySelectorAll('nav a');
+  const navLeft  = navLinks[0].getBoundingClientRect().left;
+  const navRight = navLinks[navLinks.length - 1].getBoundingClientRect().right;
   const navWidth = navRight - navLeft;
-  [document.querySelector('.tl-side-labels'), document.getElementById('tl-canvas')].forEach(el => {
-    el.style.maxWidth    = navWidth + 'px';
-    el.style.marginLeft  = navLeft + 'px';
-    el.style.marginRight = '0';
+  canvas.style.width       = navWidth + 'px';
+  canvas.style.maxWidth    = navWidth + 'px';
+  canvas.style.marginLeft  = navLeft + 'px';
+  canvas.style.marginRight = '0';
+
+  const entryWidth = Math.max(80, Math.floor(navWidth / 2 - SETTINGS.branchLen - 10));
+
+  // ── Pass 1: create entries invisibly so we can measure their heights ──
+  const entryElems = new Map();
+  for (const item of TIMELINE) {
+    const el = document.createElement('div');
+    el.className    = `tl-entry ${item.side}`;
+    el.style.width  = entryWidth + 'px';
+    el.style.top    = '0px';
+    el.style.visibility = 'hidden';
+    if (item.side === 'professional') {
+      el.style.left  = `calc(50% + ${(item.lineX - CX) + SETTINGS.branchLen + 5}px)`;
+    } else {
+      el.style.right = `calc(50% + ${SETTINGS.branchLen + 5}px)`;
+    }
+    el.innerHTML = buildEntryHTML(item);
+    canvas.appendChild(el);
+    entryElems.set(item, el);
+  }
+
+  // ── Pass 2: measure heights, compute non-overlapping y positions ──
+  const GAP      = 28; // px between bottom of one entry and top of next
+  const YEAR_GAP = 32; // extra px between year groups
+  const byYear = {};
+  TIMELINE.forEach(e => {
+    if (!byYear[e.year]) byYear[e.year] = { literary: [], professional: [] };
+    byYear[e.year][e.side].push(e);
   });
-})();
+  const sortedYears = Object.keys(byYear).map(Number).sort((a, b) => a - b);
+
+  let litY = SETTINGS.padTop;
+  let proY = SETTINGS.padTop;
+  const yearPositions = [];
+
+  for (const year of sortedYears) {
+    const lit = byYear[year].literary;
+    const pro = byYear[year].professional;
+    const extra = yearPositions.length > 0 ? YEAR_GAP : 0;
+    const yearY = Math.max(litY, proY) + extra;
+    yearPositions.push({ year, y: yearY });
+    const proOffset = lit.length > 0 ? 65 : 0;
+
+    let y = Math.max(litY, yearY);
+    for (const item of lit) {
+      item.y = y;
+      const h = entryElems.get(item).getBoundingClientRect().height;
+      y += Math.max(h + 8, h + GAP + (item.extraGap || 0));
+    }
+    if (lit.length > 0) litY = y;
+
+    y = Math.max(proY, yearY + proOffset);
+    for (const item of pro) {
+      item.y = y;
+      const h = entryElems.get(item).getBoundingClientRect().height;
+      y += Math.max(h + 8, h + GAP + (item.extraGap || 0));
+    }
+    if (pro.length > 0) proY = y;
+  }
+
+  const totalHeight = Math.max(litY, proY) + SETTINGS.padBottom;
+  canvas.style.height = totalHeight + 'px';
+
+  // ── Pass 3: position entries at computed y values and show them ──
+  for (const item of TIMELINE) {
+    const el    = entryElems.get(item);
+    const delay = (item.y / 1000).toFixed(2);
+    el.style.top        = (item.y + 14) + 'px';
+    el.style.visibility = '';
+    el.style.opacity    = '0';
+    el.style.animation  = `tlFadeIn 0.6s ease forwards ${delay}s`;
+
+    const moreBtn = el.querySelector('.entry-more');
+    if (moreBtn) {
+      moreBtn.addEventListener('click', () => {
+        el.querySelectorAll('.item-hidden').forEach(li => li.classList.remove('item-hidden'));
+        moreBtn.remove();
+      });
+    }
+  }
+
+  // ── Draw rough SVG ────────────────────────────────────────────
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width',  SVG_W);
+  svg.setAttribute('height', totalHeight);
+  Object.assign(svg.style, {
+    position: 'absolute', top: '0', left: '50%',
+    transform: 'translateX(-50%)', overflow: 'visible', pointerEvents: 'none',
+  });
+  canvas.appendChild(svg);
+
+  const rc       = rough.svg(svg);
+  const INK      = '#272320';
+  const LIT_BLUE = '#6aafd4';
+  const svgNS    = 'http://www.w3.org/2000/svg';
+
+  const lineEnd = totalHeight - SETTINGS.padBottom + 20;
+
+  svg.appendChild(rc.line(
+    CX, SETTINGS.padTop - 20, CX, lineEnd,
+    { stroke: INK, strokeWidth: 1.2, roughness: 0.4, bowing: 0 }
+  ));
+
+  const litItems = TIMELINE.filter(i => i.side === 'literary').sort((a, b) => a.y - b.y);
+  if (litItems.length > 0) {
+    const pts = [[CX, litItems[0].y - 40]];
+    litItems.forEach(item => pts.push([item.lineX, item.y + 23]));
+    pts.push([CX, lineEnd]);
+    svg.appendChild(rc.curve(pts, { stroke: LIT_BLUE, strokeWidth: 1.1, roughness: 1.2 }));
+  }
+
+  // Ellipsis dots at the bottom of both lines
+  for (let i = 0; i < 3; i++) {
+    const dotY = lineEnd + 12 + i * 9;
+    svg.appendChild(rc.circle(CX, dotY, 3,
+      { stroke: INK, strokeWidth: 0.8, fill: INK, fillStyle: 'solid', roughness: 0.6 }));
+    svg.appendChild(rc.circle(CX, dotY, 3,
+      { stroke: LIT_BLUE, strokeWidth: 0.8, fill: LIT_BLUE, fillStyle: 'solid', roughness: 0.6 }));
+  }
+
+  for (const { year, y } of yearPositions) {
+    const label = document.createElementNS(svgNS, 'text');
+    label.setAttribute('x', CX + 14);
+    label.setAttribute('y', y + 4);
+    label.setAttribute('text-anchor', 'start');
+    label.setAttribute('font-family', "'Helvetica Neue', Helvetica, Arial, sans-serif");
+    label.setAttribute('font-size', '22');
+    label.setAttribute('font-style', 'italic');
+    label.setAttribute('letter-spacing', '0.5');
+    label.setAttribute('fill', '#a09890');
+    label.textContent = year;
+    label.style.opacity   = '0';
+    label.style.animation = `tlFadeIn 0.6s ease forwards ${(y / 1000).toFixed(2)}s`;
+    svg.appendChild(label);
+  }
+
+  const starMarkers = [];
+  let starIdx = 0;
+  for (const item of TIMELINE) {
+    const y     = item.y + 23;
+    const dir   = item.side === 'literary' ? -1 : 1;
+    const color = item.side === 'literary' ? LIT_BLUE : INK;
+    const bg    = item.side === 'literary' ? '#eef6fb' : '#f0efeb';
+    const starX = item.lineX || CX;
+    const delay = (item.y / 1000).toFixed(2);
+    const rotDeg = (starIdx++ * 19) % 45;
+
+    const tickLen = item.side === 'literary'
+      ? item.lineX - CX + SETTINGS.branchLen
+      : SETTINGS.branchLen;
+    const tick = rc.line(starX, y, starX + dir * tickLen, y,
+      { stroke: color, strokeWidth: 1.0, roughness: 0.5, bowing: 0 });
+    tick.style.opacity = '0';
+    tick.style.animation = `tlFadeIn 0.6s ease forwards ${delay}s`;
+    svg.appendChild(tick);
+
+    const star = rc.polygon(starPts(starX, y, 7, 3, 8, rotDeg),
+      { stroke: color, strokeWidth: 1.0, fill: bg, fillStyle: 'solid', roughness: 0.8 });
+    star.style.opacity   = '0';
+    star.style.animation = `tlFadeIn 0.6s ease forwards ${delay}s`;
+    star.style.transition = 'filter 0.25s ease';
+    svg.appendChild(star);
+    starMarkers.push({ el: star, svgY: y });
+  }
+
+  starMarkers.sort((a, b) => a.svgY - b.svgY);
+
+  if (scrollHandler) window.removeEventListener('scroll', scrollHandler, { passive: true });
+  scrollHandler = function updateGlow() {
+    const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    const t   = Math.max(0, Math.min(1, window.scrollY / maxScroll));
+    const idx = Math.round(t * (starMarkers.length - 1));
+    const closest = starMarkers[idx].el;
+    for (const { el } of starMarkers) {
+      el.style.filter = el === closest
+        ? 'drop-shadow(0 0 3px #ffd700) drop-shadow(0 0 10px #ffd700) drop-shadow(0 0 20px #ffaa00)'
+        : '';
+    }
+  };
+  window.addEventListener('scroll', scrollHandler, { passive: true });
+  scrollHandler();
+}
+
+window.addEventListener('load', render);
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(render, 150);
+});
 
 </script>
 </body>
