@@ -732,7 +732,14 @@ function render() {
     const pts = [[CX, litItems[0].y - 40]];
     litItems.forEach(item => pts.push([item.lineX, item.y + 23]));
     pts.push([CX, lineEnd]);
-    svg.appendChild(rc.curve(pts, { stroke: LIT_BLUE, strokeWidth: 1.1, roughness: 1.2 }));
+    for (let pass = 0; pass < 3; pass++) {
+      const stroke = rc.curve(pts, {
+        stroke: LIT_BLUE, strokeWidth: 5, roughness: 2.8,
+        bowing: 0.5, disableMultiStroke: true,
+      });
+      stroke.style.opacity = '0.42';
+      svg.appendChild(stroke);
+    }
   }
 
   // Ellipsis dots at the bottom of both lines
