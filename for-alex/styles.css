@@ -1,0 +1,547 @@
+/* ── Reset ───────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:  #ece7df;
+  --ink: #111111;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+/* ── Landing ─────────────────────────────────────────────────────────────── */
+#landing {
+  position: relative;
+  /* Portrait ratio matching the reference (~780 × 952) */
+  height: 100dvh;
+  aspect-ratio: 780 / 952;
+  max-width: 100vw;
+  margin: 0 auto;
+  overflow: hidden;
+  background: var(--bg);
+  /* enables cqw units for children */
+  container-type: size;
+}
+
+/* ── Big corner words — matches "september" / "sounds" weight and size ───── */
+.word-tl,
+.word-br {
+  position: absolute;
+  z-index: 10;
+  /* Use vh so the size scales with the fixed height, not the viewport width */
+  font-size: clamp(0.7rem, 2.5vh, 1.5rem);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  text-transform: lowercase;
+  color: var(--ink);
+  pointer-events: none;
+  user-select: none;
+}
+
+.word-tl { top: 2.4rem;    left: 2.8rem;  }
+.word-br { bottom: 2.4rem; right: 2.8rem; }
+
+/* ── Photos ──────────────────────────────────────────────────────────────── */
+.photo-field {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.photo-frame {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: all;
+  /* Identical squares — sized as % of container width via cqw */
+  width: 13cqw;
+  height: 13cqw;
+}
+
+.photo-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+.photo-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #d5cdc3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(0,0,0,0.15);
+  font-size: 1.5rem;
+}
+
+/* Visual feedback while dragging an image over a frame */
+.photo-frame.drop-target {
+  outline: 3px dashed #6a8d4d;
+  outline-offset: 3px;
+  z-index: 40;
+}
+.photo-frame.drop-target * { pointer-events: none; }
+
+/* filename label that appears under a photo after a successful drop */
+.filename-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1.1rem;
+  text-align: center;
+  font-size: 0.55rem;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  background: rgba(255,255,255,0.85);
+  padding: 1px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+/* ── Marquee — continuous leisurely scroll ───────────────────────────────── */
+.marquee {
+  position: absolute;
+  /* aligns with the inner edges of the corner words */
+  left: 2.8rem;
+  right: 2.8rem;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  transform: translateY(-50%);
+}
+
+/* symmetric — one inch above and below centre */
+.marquee--top    { top: calc(50% - 1in); }
+.marquee--bottom { top: calc(50% + 1in + 1cm); }
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  white-space: nowrap;
+  animation: marquee-scroll 90s linear infinite;
+}
+
+/* offset the bottom row so the two don't move in sync */
+.marquee--bottom .marquee-track { animation-delay: -45s; }
+
+.marquee-text {
+  font-size: clamp(1rem, 2.2cqw, 1.5rem);
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink);
+  white-space: nowrap;
+  /* breathing room: huge gap before the text repeats */
+  padding-right: 50vw;
+}
+
+/* ── Editor bar — only visible when ?edit=1 is in the URL ────────────────── */
+.editor-bar { display: none; }
+body.edit-mode .editor-bar {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.editor-btn {
+  font-family: inherit;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: lowercase;
+  padding: 0.45rem 0.8rem;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.editor-btn:hover { opacity: 0.85; }
+
+/* The toggle is faded in view mode and prominent in edit mode */
+.editor-btn--toggle {
+  background: transparent;
+  color: var(--ink);
+  opacity: 0.35;
+  border: 1px solid rgba(0,0,0,0.25);
+}
+.editor-btn--toggle:hover { opacity: 0.9; }
+#landing.editing .editor-btn--toggle {
+  background: var(--ink);
+  color: var(--bg);
+  opacity: 1;
+  border-color: transparent;
+}
+
+/* Hide all "edit-only" controls in view mode; show in edit mode (landing OR detail) */
+.editor-btn--edit-only,
+.editor-status.editor-btn--edit-only { display: none; }
+#landing.editing .editor-btn--edit-only,
+#detail-page.editing .editor-btn--edit-only { display: inline-flex; align-items: center; }
+#landing.editing .editor-btn--edit-only.editor-status,
+#detail-page.editing .editor-btn--edit-only.editor-status { display: inline; }
+#detail-page.editing .editor-btn--toggle { background: var(--ink); color: var(--bg); opacity: 1; border-color: transparent; }
+
+.editor-btn--edit-only:not(.editor-status) { background: #6a8d4d; }
+
+.editor-status {
+  font-size: 0.7rem;
+  color: var(--ink);
+  letter-spacing: 0.05em;
+  font-style: italic;
+}
+
+/* ── Edit mode visual cues ───────────────────────────────────────────────── */
+#landing.editing .photo-frame {
+  cursor: grab;
+  outline: 1.5px dashed rgba(0,0,0,0.4);
+  outline-offset: 2px;
+}
+#landing.editing .photo-frame.dragging {
+  cursor: grabbing;
+  z-index: 100;
+  outline-color: #6a8d4d;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.2);
+}
+#landing.editing .photo-frame::after {
+  content: attr(data-pos);
+  position: absolute;
+  bottom: -1.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.55rem;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+  background: var(--bg);
+  padding: 1px 4px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ── Scroll hint ─────────────────────────────────────────────────────────── */
+.scroll-hint {
+  position: absolute;
+  bottom: 2.4rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: rgba(0,0,0,0.25);
+  cursor: pointer;
+  animation: bob 2.2s ease-in-out infinite;
+  transition: color 0.2s;
+}
+.scroll-hint:hover { color: var(--ink); }
+
+/* ── Timeline ────────────────────────────────────────────────────────────── */
+#timeline {
+  padding: 6rem 1.5rem 4rem;
+  max-width: 740px;
+  margin: 0 auto;
+}
+
+.timeline-heading {
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-transform: lowercase;
+  color: var(--ink);
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.timeline-track {
+  position: relative;
+  padding-left: 1.8rem;
+}
+
+.timeline-track::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 1px;
+  background: rgba(0,0,0,0.15);
+}
+
+/* ── Memory card ─────────────────────────────────────────────────────────── */
+.memory-card {
+  position: relative;
+  margin-bottom: 3rem;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.memory-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.memory-card::before {
+  content: '';
+  position: absolute;
+  left: -1.96rem;
+  top: 0.45rem;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+.memory-inner {
+  background: #fff;
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.08);
+}
+
+.memory-photo {
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+  display: block;
+}
+
+.memory-photo-placeholder {
+  width: 100%;
+  height: 180px;
+  background: #e8e2da;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(0,0,0,0.18);
+  font-size: 2rem;
+}
+
+.memory-body { padding: 1.1rem 1.3rem 1.3rem; }
+
+.memory-date {
+  font-size: 0.67rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 0.25rem;
+}
+
+.memory-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: 0.35rem;
+}
+
+.memory-description {
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: #555;
+}
+
+/* ── Haiku page ──────────────────────────────────────────────────────────── */
+#haiku-page {
+  position: relative;
+  min-height: 100dvh;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.back-link {
+  position: absolute;
+  top: 1.4rem;
+  left: 1.6rem;
+  z-index: 30;
+  font-size: 0.9rem;
+  color: var(--ink);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  opacity: 0.55;
+  transition: opacity 0.15s;
+}
+.back-link:hover { opacity: 1; text-decoration: underline; }
+
+.note-box {
+  font-size: clamp(0.75rem, 1.7vh, 1.05rem);
+  font-weight: 400;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  text-align: left;
+  width: min(100%, 36ch);
+  min-height: 4em;
+  padding: 1rem 1.2rem;
+  outline: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+  cursor: text;
+}
+/* placeholder hint when the note is empty */
+.note-box.is-placeholder { color: rgba(0,0,0,0.3); }
+.note-box:focus { outline: none; }
+
+/* Photo frame, centred. Hand-drawn corner crosses. */
+.detail-frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(46vw, 50vh);
+  aspect-ratio: 3 / 4;
+  /* Wobbly hand-drawn frame */
+  outline: 1.5px solid var(--ink);
+  outline-offset: 14px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.detail-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.frame-corner {
+  position: absolute;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: var(--ink);
+  pointer-events: none;
+}
+.frame-corner--tl { top: -28px; left: -28px;  }
+.frame-corner--tr { top: -28px; right: -28px; }
+.frame-corner--bl { bottom: -28px; left: -28px;  }
+.frame-corner--br { bottom: -28px; right: -28px; }
+
+/* Editable notes */
+.notes {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.note {
+  position: absolute;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  line-height: 1.45;
+  color: var(--ink);
+  max-width: 22ch;
+  padding: 0.4rem 0.6rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  pointer-events: all;
+}
+
+.note-content {
+  outline: none;
+  min-width: 4ch;
+  min-height: 1em;
+}
+
+.note-handle {
+  display: none;
+  position: absolute;
+  top: -0.85rem;
+  left: -0.85rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 0.7rem;
+  text-align: center;
+  line-height: 1.4rem;
+  cursor: grab;
+  user-select: none;
+}
+.note-handle:active { cursor: grabbing; }
+
+#detail-page.editing .note {
+  outline: 1px dashed rgba(0,0,0,0.25);
+  outline-offset: 3px;
+  background: rgba(255,255,255,0.35);
+}
+#detail-page.editing .note-handle  { display: block; }
+#detail-page.editing .note-content { cursor: text; }
+#detail-page.editing .note.dragging {
+  outline-color: #6a8d4d;
+  z-index: 50;
+}
+
+/* Main frame is the drop target for a replacement image in edit mode */
+#detail-page.editing .detail-frame {
+  cursor: copy;
+}
+.detail-frame.drop-target {
+  outline-color: #6a8d4d !important;
+  outline-width: 3px !important;
+  outline-style: dashed !important;
+}
+.detail-filename {
+  position: absolute;
+  bottom: -1.4rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--ink);
+  background: rgba(255,255,255,0.85);
+  padding: 2px 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.editor-btn--danger { background: #b35c4d; }
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+footer {
+  text-align: center;
+  padding: 2rem 1rem 3rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: lowercase;
+  color: #999;
+}
+
+/* ── Keyframes ───────────────────────────────────────────────────────────── */
+@keyframes bob {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%       { transform: translateX(-50%) translateY(5px); }
+}
+
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}

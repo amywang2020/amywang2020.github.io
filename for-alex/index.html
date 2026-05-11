@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>alex & amy</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ── Landing ──────────────────────────────────────────────────── -->
+  <section id="landing">
+
+    <h1 class="word-tl">six months...</h1>
+    <p class="word-br">of memories!</p>
+
+    <div class="photo-field" id="photo-field"></div>
+
+    <!-- two scrolling marquees with breathing room -->
+    <div class="marquee marquee--top">
+      <div class="marquee-track" id="marquee-track-top"></div>
+    </div>
+    <div class="marquee marquee--bottom">
+      <div class="marquee-track" id="marquee-track-bottom"></div>
+    </div>
+
+    <!-- ── Editor controls (visible only in edit mode) ────────────── -->
+    <div class="editor-bar" id="editor-bar">
+      <button class="editor-btn editor-btn--toggle" id="edit-toggle">edit</button>
+      <button class="editor-btn editor-btn--edit-only" id="save-positions">save &amp; copy</button>
+      <button class="editor-btn editor-btn--edit-only" id="copy-filenames">copy filenames</button>
+      <button class="editor-btn editor-btn--edit-only" id="export-notes">export notes</button>
+      <span class="editor-status editor-btn--edit-only" id="editor-status"></span>
+    </div>
+
+  </section>
+
+  <footer>made with love — may 2025</footer>
+
+  <script src="memories.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
