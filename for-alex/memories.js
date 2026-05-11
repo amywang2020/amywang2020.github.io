@@ -5,19 +5,18 @@ const TICKER_TEXT_TOP    = "138 days, 6 hikes, 7 recipes, 1 international visit,
 const TICKER_TEXT_BOTTOM = "1 playlist, a few crashouts, 1 museum, 3 state parks";
 
 // One entry per photo box. The `photo` value should match a file in /photos/.
-// `note` is the default text shown on the detail page; you can also edit it
-// directly in the browser (changes save to localStorage and persist).
+// `note` is the default text shown on the detail page.
 // Order corresponds to PHOTO_LAYOUT positions 1–11 in script.js.
 const MEMORIES = [
-  { photo: "cookie!.jpg",           title: "Cookie!",         note: "" },  //  1
-  { photo: "run!.jpg",              title: "Run!",            note: "" },  //  2
-  { photo: "second date.jpg",       title: "Second Date",     note: "" },  //  3
-  { photo: "cal science.jpg",       title: "Cal Science",     note: "" },  //  4
-  { photo: "gray whale cove 2.jpg", title: "Gray Whale Cove", note: "" },  //  5
-  { photo: "campus.jpg",            title: "Campus",          note: "" },  //  6
-  { photo: "masterpiece.jpg",       title: "Masterpiece",     note: "" },  //  7
+  { photo: "cookie!.jpg",           title: "Cookie!",         note: "I remember this much less for the cookies we consumed (which frankly I have very little recollection of, taste-wise) and moreso as the first time I ever saw you write something down. I know that’s not a crazy instance by any metric, but I remember thinking you had beautiful penmanship. Miss you! Hope to eat very many baked goods with you in short succession (haha get it), soon." },  //  1
+  { photo: "run!.jpg",              title: "Run!",            note: "I think a lot (like a normal amount, so not THAT much) about how it felt to run that final half mile or so at sunset. If I was better geared for endurance sports, I would… ask you to do non-freaky cardio with you all the time." },  //  2
+  { photo: "second date.jpg",       title: "Second Date",     note: "You know what they say… first is the worst, second is…. the best? I think I knew we had the potential to go pretty far when I took that photo of you in the tree and it ended up being one of my favorite pictures from all of the quarter." },  //  3
+  { photo: "cal science.jpg",       title: "Cal Science",     note: "RIP claude the albino alligator, and RIP the IMAX movie on space that we both fell asleep during." },  //  4
+  { photo: "gray whale cove 2.jpg", title: "Gray Whale Cove", note: "There are so many things we did together during fall quarter so this note is for my personal top three:\n\n3. stupid chud haunted house\n2. freezing slowly at gray whale cove after the sun set… the stars above us like little ghostly pinpricks\n1. the last day and a half before I left for winter break" },  //  5
+  { photo: "campus.jpg",            title: "Campus",          note: "As grateful as I am for the scenic nature of Stanford, I really do like campus so much more when I get to take you on really long walks all around it." },  //  6
+  { photo: "masterpiece.jpg",       title: "Masterpiece",     note: "Can we… make donuts…….. soon….." },  //  7
   { photo: "christmas.jpg",         title: "Christmas",       note: "" },  //  8
-  { photo: "camping.jpg",           title: "Camping",         note: "" },  //  9
-  { photo: "meyhouse.jpg",          title: "Meyhouse",        note: "" },  // 10
-  { photo: "purisima.jpg",          title: "Purisima",        note: "" },  // 11
+  { photo: "camping.jpg",           title: "Camping",         note: "I have genuinely never had a better time camping… which is saying something because two of my S tier and A tier best friends respectively from college I met during SPOT. I hope we get to crack in a tent again… soon." },  //  9
+  { photo: "meyhouse.jpg",          title: "Meyhouse",        note: "This is your formal invite to Ethel’s Fancy!!! Dinner at which is my present to you for our six month anniversary. Apparently their menu is seasonal and only sometimes has the right items to accommodate someone gluten-free? Something for us to discuss later." },  // 10
+  { photo: "purisima.jpg",          title: "Purisima",        note: "Dear Alex,\n\nHappy six months! There is a lot I would like to say, and a lot that should be said, but this site doesn’t really accommodate for that much text. To keep it brief, you are a delight. I say sometimes that our relationship is of a hedonistic nature, but what I always really mean is that I have been happier in many and immeasurable ways since meeting you. This isn’t just me glazing — you persevere so beautifully, and I really admire that. Despite so much, you manage to show up for the people you love and your many, varied goals and also for me. Wherever you are reading this, I miss you. See you soon!!\n\nYours,\nAmy" },  // 11
 ];
