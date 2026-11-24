@@ -1,0 +1,79 @@
+/*
+  works.css — the list layout shared by the publications (works.html),
+  projects (projects.html) and reading (reading.html) pages: section labels with a hand-drawn
+  blue underline, and items that slide in as they scroll into view.
+  The underlines and slide-in come from js/works.js.
+*/
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.works-content {
+  position: relative; /* the hand-drawn underlines are positioned inside this */
+  max-width: 480px;
+  margin: 0 var(--side-margin);
+  padding: 64px 0 160px;
+}
+
+.works-group {
+  margin-bottom: 52px;
+}
+
+.works-group-label {
+  font-size: 1.1rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+
+/* Items start slightly faded and low, then slide in (js/works.js adds .visible). */
+.works-item {
+  display: flex;
+  flex-direction: column;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(39, 35, 32, 0.07);
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.works-item:last-child {
+  border-bottom: none;
+}
+
+.works-item.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.works-item-line {
+  font-size: 0.88rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.works-item-line a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(26, 24, 23, 0.25);
+  transition: border-color 0.15s;
+}
+
+.works-item-line a:hover {
+  border-bottom-color: var(--ink);
+}
+
+.works-item-note {
+  font-size: 0.72rem;
+  color: var(--ink-light);
+  margin-top: 2px;
+}

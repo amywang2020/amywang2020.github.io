@@ -1,5 +1,5 @@
 /*
-  works.js — the publications page's small touches:
+  works.js — the small touches on the publications, projects and reading pages:
     • each item slides in the first time it scrolls into view
     • hand-drawn blue underlines under the section labels
     • a hand-drawn circle around any item marked data-mark="circle"

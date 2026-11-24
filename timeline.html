@@ -22,10 +22,26 @@
     }
 
     .hint {
-      margin: 8px var(--side-margin) 48px;
+      margin: 8px var(--side-margin) 0;
       font-size: 0.72rem;
       letter-spacing: 0.08em;
       color: var(--ink-light);
+    }
+
+    /* Resume download, just under the timeline. To update it, replace
+       Wang_Amy_Resume.pdf in the main folder and change the date in the link text. */
+    .resume-link {
+      align-self: flex-start;
+      margin: 20px var(--side-margin) 48px;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .resume-link:hover {
+      color: var(--ink-mid);
     }
 
 
@@ -133,7 +149,7 @@
       position: relative;
       max-width: 900px;
       margin: 0 auto;
-      padding: 20px 0 120px;
+      padding: 20px 0 0;  /* the resume link sits right under it */
     }
 
     .tl-entry {
@@ -241,8 +257,8 @@
     <nav>
       <a href="timeline.html" class="active">timeline</a>
       <a href="works.html">publications</a>
-      <a href="https://www.linkedin.com/in/amjwang/" target="_blank" rel="noopener">linkedin</a>
-      <a href="https://amyjwang.substack.com/" target="_blank" rel="noopener">substack</a>
+      <a href="projects.html">projects</a>
+      <a href="reading.html">reading</a>
     </nav>
   </header>
 
@@ -253,6 +269,7 @@
       <div class="track" id="track"></div>
     </div>
     <p class="hint">scroll sideways →</p>
+    <a class="resume-link" href="Wang_Amy_Resume.pdf" download>updated resume as of August 2026 ↓</a>
   </main>
 
   <script src="https://unpkg.com/roughjs@4.6.6/bundled/rough.js"></script>

@@ -31,6 +31,7 @@ const TIMELINE = [
   { year: 2025, side: "literary", title: "Mentee, Levinthal Tutorial", desc: "Studied poetry under Dāshaun Washington", items: [], photo: "", annotation: "" },
   { year: 2025, side: "literary", title: "Mentor, San Diego Association of Chinese Americans Summer Journalism Program", desc: "Mentored high school students in journalism", items: [], photo: "", annotation: "" },
   { year: 2025, side: "literary", title: "Editorial Intern, East of Borneo Magazine", desc: "Edited content and publications", items: [], photo: "", annotation: "" },
+  { year: 2027, side: "literary", title: "Honors in the Arts Thesis", desc: "", items: [], photo: "", annotation: "" },
 
   /* ── Professional ─────────────────────────────────────────── */
 
@@ -42,6 +43,6 @@ const TIMELINE = [
   { year: 2024, side: "professional", title: "Advancement and Analytics Intern, Sierra Club", desc: "Supported fundraising operations and donor analytics", items: [], photo: "", annotation: "" },
   { year: 2025, side: "professional", title: "Intern, Pentagon Federal Credit Union", desc: "Built AI integrations and operations infrastructure", items: [], photo: "", annotation: "" },
   { year: 2026, side: "professional", title: "Research Assistant @ Stanford's Virtual Human Interaction Lab", desc: "", items: [], photo: "", annotation: "", extraGap: -70 },
-  { year: 2026, side: "professional", title: "Incoming Summer Investment Banking Analyst, Barclays", desc: "Joining the West Coast Financial Sponsors team", items: [], photo: "", annotation: "" }
+  { year: 2026, side: "professional", title: "Summer Investment Banking Analyst, Barclays", desc: "West Coast Financial Sponsors team", items: [], photo: "", annotation: "" }
 
 ];

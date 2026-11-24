@@ -13,14 +13,19 @@
       flex-direction: column;
     }
 
-    /* The bio sits beside the photo, lined up with its bottom edge.
-       On narrow screens it wraps underneath. */
+    /* The bio sits beside the photo, lined up with its top edge, so it's on
+       screen as soon as the page opens. On narrow screens it moves above the photo.
+
+       wrap-reverse is what puts the bio above the photo when they don't fit
+       side by side: it stacks rows from the bottom of the screen up. It also flips
+       the up/down directions for the two align rules below, so here
+       "flex-end" means the top and "flex-start" means the bottom. */
     main {
       flex-grow: 1;
       display: flex;
-      flex-wrap: wrap;
-      align-items: flex-end;
-      align-content: flex-end;
+      flex-wrap: wrap-reverse;
+      align-items: flex-end;      /* bio lines up with the top of the photo */
+      align-content: flex-start;  /* everything sits at the bottom of the screen */
       gap: 32px 56px;
       padding: clamp(32px, 5vw, 72px) var(--side-margin) clamp(48px, 8vw, 120px);
     }
@@ -31,6 +36,16 @@
       font-size: 0.9rem;
       line-height: 1.6;
     }
+
+    .bio a {
+      color: var(--ink);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .bio a:hover {
+      color: var(--ink-mid);
+    }
   </style>
 </head>
 <body>
@@ -39,8 +54,8 @@
     <nav>
       <a href="timeline.html">timeline</a>
       <a href="works.html">publications</a>
-      <a href="https://www.linkedin.com/in/amjwang/" target="_blank" rel="noopener">linkedin</a>
-      <a href="https://amyjwang.substack.com/" target="_blank" rel="noopener">substack</a>
+      <a href="projects.html">projects</a>
+      <a href="reading.html">reading</a>
     </nav>
   </header>
 
@@ -50,7 +65,7 @@
       <div class="cutout-hole"></div>
       <img class="cutout-figure" src="photos/landing-figure.png" alt="Amy Jane Wang">
     </div>
-    <p class="bio">Hi, I'm Amy. I'm currently a junior at Stanford University — majoring in Symbolic Systems and minoring in Creative Writing.</p>
+    <p class="bio">Hi! I'm Amy. I'm currently a senior at Stanford University, majoring in Symbolic Systems and minoring in Creative Writing - Prose. Find me on <a href="https://x.com/amjwang" target="_blank" rel="noopener">Twitter</a>, <a href="https://www.instagram.com/amyj.wang/" target="_blank" rel="noopener">Instagram</a>, <a href="https://www.linkedin.com/in/amjwang/" target="_blank" rel="noopener">LinkedIn</a>, and out in the world on a long, long hike.</p>
   </main>
 </body>
 </html>

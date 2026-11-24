@@ -53,8 +53,10 @@ body {
   letter-spacing: 0.08em;
 }
 
-/* min-height keeps each link a comfortable tap target on phones. */
+/* min-height keeps each link a comfortable tap target on phones.
+   position: relative lets the hover line below sit just under the link. */
 .site-header nav a {
+  position: relative;
   display: inline-flex;
   align-items: center;
   min-height: 44px;
@@ -70,6 +72,22 @@ body {
 
 .site-header nav a:hover {
   color: var(--ink-mid);
+}
+
+/* On hover, a crayon-blue line appears under the menu link (except the current
+   page's link, which is already underlined). The line is crayon-underline.svg,
+   stretched to the link's width. Only on devices with a mouse, so the line
+   doesn't stay stuck on after a tap on a phone. */
+@media (hover: hover) {
+  .site-header nav a:not(.active):hover::after {
+    content: '';
+    position: absolute;
+    left: -7px;
+    right: -7px;
+    top: calc(50% + 4px);
+    height: 16px;
+    background: url(crayon-underline.svg) center / 100% 100% no-repeat;
+  }
 }
 
 
