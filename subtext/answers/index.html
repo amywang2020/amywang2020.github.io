@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Subtext answers · Amy Wang</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<style>
+  body {
+    margin: 0;
+    background: #050a06;
+    color: #7dffa0;
+    font-family: 'VT323', ui-monospace, monospace;
+    font-size: 22px;
+    line-height: 1.3;
+  }
+
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px 64px;
+  }
+
+  h1 {
+    margin: 0 0 16px;
+    font-weight: 400;
+    font-size: 48px;
+    letter-spacing: 6px;
+  }
+
+  p {
+    margin: 0 0 6px;
+  }
+
+  .dim {
+    color: #3fa866;
+  }
+
+  .table-box {
+    margin-top: 28px;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 20px;
+  }
+
+  th {
+    text-align: left;
+    font-weight: 400;
+    color: #3fa866;
+    border-bottom: 1px solid #1e5a35;
+    padding: 0 14px 6px 0;
+    white-space: nowrap;
+  }
+
+  td {
+    vertical-align: top;
+    padding: 10px 14px 10px 0;
+    border-bottom: 1px solid #12301d;
+  }
+
+  td:nth-child(2), td:nth-child(8) {
+    min-width: 220px;
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>SUBTEXT · ANSWERS</h1>
+  <p id="status" class="dim">Loading…</p>
+  <p id="summary"></p>
+  <p id="felt" class="dim"></p>
+  <div class="table-box">
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Strongest love</th>
+          <th>Age</th>
+          <th>Last spoke</th>
+          <th>How it ended</th>
+          <th>Read to end</th>
+          <th>Felt written for them</th>
+          <th>Comment</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+</main>
+
+<script>
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzCMvyBAeaY-ZjcOdlAdeTpmtymLI5riWOJhgJmr66l4caMI7ycrGl1DMPSODLeT7Pg/exec';
+
+const statusLine = document.getElementById('status');
+const summaryLine = document.getElementById('summary');
+const feltLine = document.getElementById('felt');
+const tableBody = document.getElementById('rows');
+
+function addCell(row, text) {
+  const cell = document.createElement('td');
+  cell.textContent = text;
+  row.appendChild(cell);
+}
+
+function showAnswers(answers) {
+  if (answers.length === 0) {
+    statusLine.textContent = 'No answers yet.';
+    return;
+  }
+  statusLine.textContent = '';
+
+  let finished = 0;
+  const feltCounts = { 'Yes, clearly': 0, 'A little': 0, 'Not really': 0, 'Can’t say': 0 };
+  for (const answer of answers) {
+    if (answer[5] === 'yes') {
+      finished = finished + 1;
+    }
+    if (answer[6] in feltCounts) {
+      feltCounts[answer[6]] = feltCounts[answer[6]] + 1;
+    }
+  }
+
+  let readerWord = 'readers';
+  if (answers.length === 1) {
+    readerWord = 'reader';
+  }
+  summaryLine.textContent = answers.length + ' ' + readerWord + '. ' + finished + ' read to the end.';
+
+  const parts = [];
+  for (const option in feltCounts) {
+    parts.push(option + ' ' + feltCounts[option]);
+  }
+  feltLine.textContent = 'Did any part feel written for you? ' + parts.join(' · ');
+
+  for (const answer of answers.slice().reverse()) {
+    const row = document.createElement('tr');
+    for (const value of answer) {
+      addCell(row, value);
+    }
+    tableBody.appendChild(row);
+  }
+}
+
+if (SHEET_URL === '') {
+  statusLine.textContent = 'Paste your Apps Script web app URL into SHEET_URL to see answers.';
+} else {
+  fetch(SHEET_URL)
+    .then(function (response) {
+      return response.json();
+    })
+    .then(showAnswers)
+    .catch(function () {
+      statusLine.textContent = 'Couldn’t load the answers.';
+    });
+}
+</script>
+</body>
+</html>

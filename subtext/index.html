@@ -172,7 +172,7 @@
     border-bottom: 1px solid var(--faint);
   }
 
-  #answer {
+  #answer, #comment-input {
     flex-grow: 1;
     min-width: 0;
     min-height: 44px;
@@ -194,7 +194,7 @@
     flex-direction: column;
   }
 
-  #question {
+  #question, #rate-question {
     margin-bottom: 14px;
   }
 
@@ -308,7 +308,6 @@
       <div class="title-body">
         <h1>SUBTEXT</h1>
         <p class="dim">stories written again for each reader</p>
-        <p class="dim small" style="margin-top: 32px">Amy Wang · Stanford Honors in the Arts, 2027</p>
       </div>
       <div class="foot">
         <button type="button" id="begin-button">&gt; press any key to begin<span class="cursor" aria-hidden="true">█</span></button>
@@ -323,11 +322,10 @@
           <span class="dim" aria-hidden="true">&gt;</span>
           <input id="answer" type="text" maxlength="80" autocomplete="off" spellcheck="false">
         </div>
-        <p class="dim small">A person, a place, a year. Anything.</p>
+        <p class="dim small">A person, a place, a year. Leave out full names.</p>
       </div>
       <div class="foot">
         <button type="button" id="answer-button"><span class="dim">[enter]</span> continue</button>
-        <span class="dim">Nothing you type is saved.</span>
       </div>
     </section>
 
@@ -340,7 +338,7 @@
         <button type="button" class="option" data-choice="2"><span class="dim">[3]</span><span class="option-text"></span></button>
         <button type="button" class="option" data-choice="3"><span class="dim">[4]</span><span class="option-text"></span></button>
       </div>
-      <div class="foot dim">Nothing you answer is saved.</div>
+      <div class="foot"></div>
     </section>
 
     <section id="reading" class="view" hidden>
@@ -362,9 +360,36 @@
       </div>
       <div class="foot">
         <div class="foot-left">
-          <button type="button" id="reveal-button"><span class="dim">[r]</span> see who wrote what</button>
+          <button type="button" id="end-button"><span class="dim">[space]</span> continue</button>
           <button type="button" class="restart-button"><span class="dim">[esc]</span> next reader</button>
         </div>
+      </div>
+    </section>
+
+    <section id="rate" class="view" hidden>
+      <div class="bar"><span>AFTER YOU READ</span><span>1 / 2</span></div>
+      <div class="choose-body">
+        <p id="rate-question">Did any part of the story feel written for you?</p>
+        <button type="button" class="rate-option option" data-choice="0"><span class="dim">[1]</span><span class="rate-text"></span></button>
+        <button type="button" class="rate-option option" data-choice="1"><span class="dim">[2]</span><span class="rate-text"></span></button>
+        <button type="button" class="rate-option option" data-choice="2"><span class="dim">[3]</span><span class="rate-text"></span></button>
+        <button type="button" class="rate-option option" data-choice="3"><span class="dim">[4]</span><span class="rate-text"></span></button>
+      </div>
+      <div class="foot"></div>
+    </section>
+
+    <section id="comment" class="view" hidden>
+      <div class="bar"><span>AFTER YOU READ</span><span>2 / 2</span></div>
+      <div class="ask-body">
+        <label for="comment-input">Anything you want to tell the author?</label>
+        <div class="answer-line">
+          <span class="dim" aria-hidden="true">&gt;</span>
+          <input id="comment-input" type="text" maxlength="200" autocomplete="off" spellcheck="false">
+        </div>
+        <p class="dim small">Optional. Press enter to skip.</p>
+      </div>
+      <div class="foot">
+        <button type="button" id="comment-button"><span class="dim">[enter]</span> continue</button>
       </div>
     </section>
 
@@ -391,6 +416,8 @@
 </main>
 
 <script>
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzCMvyBAeaY-ZjcOdlAdeTpmtymLI5riWOJhgJmr66l4caMI7ycrGl1DMPSODLeT7Pg/exec';
+
 const pages = [
   "Very drunk or very high or, sometimes, on a lot of poppers, Junie is probably the most honest person she knows. Such occasions are the only ones where she is able to admit certain truths to herself. Mainly, that she is gluttonous. That she is desiring. That what she wants, historically, has never been good for her. Old boyfriends, another banana nut muffin from the dining hall, to never sleep again. It’s the excess of all of it, probably. How she wants, so badly, a consumption of things that would kill her if only she would give them a chance.",
   "   At two in the morning, she finds herself in the kitchen, eating a peach over the sink. She had had three earlier, after dinner, and they had all been exceptionally perfect. This particular one is overripe, soft and splitting apart in her hands. The juice of it has run down her wrist.\n   For a long time, Junie had genuinely prayed, genuinely and with her whole heart, to grow older, faster. Adulthood was a promised land. There, you could do what you wanted, be what you wanted. And Junie wanted so much. Shr wanted to live in the city. She wanted to make a lot of money.",
@@ -465,8 +492,11 @@ const questions = [
   { text: 'How did it end?', options: ['They left', 'I left', 'It faded', 'It hasn’t'] }
 ];
 
+const feedbackOptions = ['Yes, clearly', 'A little', 'Not really', 'Can’t say'];
+
 const screenBox = document.getElementById('screen');
 const answerInput = document.getElementById('answer');
+const commentInput = document.getElementById('comment-input');
 const pageText = document.getElementById('page-text');
 
 let screen = 'title';
@@ -477,6 +507,11 @@ let page = 0;
 let typed = 0;
 let rowPages = [];
 let idleTimer = null;
+let intakeDone = false;
+let finishedReading = false;
+let feltWritten = '';
+let comment = '';
+let saved = false;
 
 const settings = new URLSearchParams(window.location.search);
 if (settings.get('crt') === '0') {
@@ -496,11 +531,34 @@ function show(name) {
   for (const view of document.querySelectorAll('.view')) {
     view.hidden = view.id !== name;
   }
+  answerInput.blur();
+  commentInput.blur();
   if (name === 'ask') {
     answerInput.focus();
-  } else {
-    answerInput.blur();
   }
+  if (name === 'comment') {
+    commentInput.focus();
+  }
+}
+
+function saveVisit() {
+  if (saved || !intakeDone) {
+    return;
+  }
+  saved = true;
+  if (SHEET_URL === '') {
+    return;
+  }
+  const row = {
+    love: answer,
+    age: questions[0].options[picks[0]],
+    lastSpoke: questions[1].options[picks[1]],
+    ended: questions[2].options[picks[2]],
+    finishedReading: finishedReading ? 'yes' : 'no',
+    feltWritten: feltWritten,
+    comment: comment
+  };
+  fetch(SHEET_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(row) }).catch(function () {});
 }
 
 function textForPage(index) {
@@ -525,7 +583,7 @@ function submitAnswer() {
 function showQuestion() {
   document.getElementById('question-number').textContent = (question + 2) + ' / 4';
   document.getElementById('question').textContent = questions[question].text;
-  const optionTexts = document.querySelectorAll('.option-text');
+  const optionTexts = document.querySelectorAll('#choose .option-text');
   for (let i = 0; i < optionTexts.length; i++) {
     optionTexts[i].textContent = questions[question].options[i];
   }
@@ -538,6 +596,7 @@ function choose(choice) {
     question = question + 1;
     showQuestion();
   } else {
+    intakeDone = true;
     page = 0;
     typed = 0;
     show('reading');
@@ -575,10 +634,31 @@ function next() {
     page = page + 1;
     typed = 0;
   } else {
+    finishedReading = true;
     show('end');
     return;
   }
   drawPage();
+}
+
+function continueFromEnd() {
+  if (saved) {
+    reveal();
+  } else {
+    show('rate');
+  }
+}
+
+function rate(choice) {
+  feltWritten = feedbackOptions[choice];
+  commentInput.value = '';
+  show('comment');
+}
+
+function submitComment() {
+  comment = commentInput.value.trim();
+  saveVisit();
+  reveal();
 }
 
 function back() {
@@ -643,6 +723,13 @@ function openRow(index) {
 }
 
 function restart() {
+  saveVisit();
+  intakeDone = false;
+  finishedReading = false;
+  feltWritten = '';
+  comment = '';
+  saved = false;
+  commentInput.value = '';
   question = 0;
   answer = '';
   answerInput.value = '';
@@ -660,10 +747,6 @@ function resetIdle() {
 document.addEventListener('keydown', function (event) {
   resetIdle();
   const key = event.key;
-
-  if (document.activeElement && document.activeElement.tagName === 'BUTTON') {
-    document.activeElement.blur();
-  }
 
   if (key === 'Escape') {
     restart();
@@ -690,8 +773,19 @@ document.addEventListener('keydown', function (event) {
       back();
     }
   } else if (screen === 'end') {
-    if (key === 'r') {
-      reveal();
+    if (key === ' ' || key === 'Enter') {
+      event.preventDefault();
+      continueFromEnd();
+    }
+  } else if (screen === 'rate') {
+    if (['1', '2', '3', '4'].includes(key)) {
+      event.preventDefault();
+      rate(Number(key) - 1);
+    }
+  } else if (screen === 'comment') {
+    if (key === 'Enter') {
+      event.preventDefault();
+      submitComment();
     }
   } else if (screen === 'reveal') {
     if (['1', '2', '3'].includes(key)) {
@@ -705,15 +799,27 @@ document.getElementById('begin-button').addEventListener('click', begin);
 document.getElementById('answer-button').addEventListener('click', submitAnswer);
 document.getElementById('next-button').addEventListener('click', next);
 document.getElementById('back-button').addEventListener('click', back);
-document.getElementById('reveal-button').addEventListener('click', reveal);
+document.getElementById('end-button').addEventListener('click', continueFromEnd);
+document.getElementById('comment-button').addEventListener('click', submitComment);
 
 for (const button of document.querySelectorAll('.restart-button')) {
   button.addEventListener('click', restart);
 }
 
-for (const button of document.querySelectorAll('.option')) {
+for (const button of document.querySelectorAll('#choose .option')) {
   button.addEventListener('click', function () {
     choose(Number(button.dataset.choice));
+  });
+}
+
+const rateTexts = document.querySelectorAll('.rate-text');
+for (let i = 0; i < rateTexts.length; i++) {
+  rateTexts[i].textContent = feedbackOptions[i];
+}
+
+for (const button of document.querySelectorAll('.rate-option')) {
+  button.addEventListener('click', function () {
+    rate(Number(button.dataset.choice));
   });
 }
 
