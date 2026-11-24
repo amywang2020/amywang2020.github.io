@@ -1,0 +1,113 @@
+/*
+  site.css — styles shared by every main page (home, timeline, publications, about).
+
+  Change a color, the font, or the header here and it updates on all four pages.
+  Styles that only one page needs live in a <style> block inside that page.
+*/
+
+:root {
+  --background: #ffffff;
+  --ink: #1a1817;
+  --ink-mid: #6b6560;
+  --ink-light: #a09890;
+  --blue: #6aafd4;
+  --font-main: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  /* Page margins. The header, the photo and the page content all line up on these. */
+  --side-margin: clamp(24px, 7.8vw, 112px);
+  --top-margin: clamp(28px, 4.5vw, 64px);
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--ink);
+  font-family: var(--font-main);
+}
+
+
+/* ── Header: name + menu (identical on every page) ─────────────────────── */
+
+.site-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+  padding: var(--top-margin) var(--side-margin) 0;
+}
+
+.site-title {
+  font-size: clamp(1.6rem, 2.2vw, 2rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.site-header nav {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 36px;
+  row-gap: 4px;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+}
+
+/* min-height keeps each link a comfortable tap target on phones. */
+.site-header nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+/* Underlines the link for the page you're on (add class="active" to it). */
+.site-header nav a.active {
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+
+.site-header nav a:hover {
+  color: var(--ink-mid);
+}
+
+
+/* ── Cut-out photo (home and about pages) ──────────────────────────────────
+   Three stacked layers:
+     1. .cutout-photo  — the night photo
+     2. .cutout-hole   — a block of background color, masked to Amy's silhouette,
+                         so it looks like a hole where she was standing
+     3. .cutout-figure — Amy herself, shifted right of the hole
+   To move the figure, change left: on .cutout-figure.
+*/
+
+.cutout {
+  position: relative;
+  width: 100%;
+  max-width: 662px;
+}
+
+.cutout-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.cutout-hole {
+  position: absolute;
+  inset: 0;
+  background: var(--background);
+  -webkit-mask-image: url(../photos/landing-hole.png);
+  mask-image: url(../photos/landing-hole.png);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+.cutout-figure {
+  position: absolute;
+  left: 42.094%;
+  bottom: 0;
+  width: 35.429%;
+  height: auto;
+}

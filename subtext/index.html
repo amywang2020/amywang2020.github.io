@@ -415,8 +415,22 @@
 </main>
 
 <script>
+/*
+  Subtext — the story page for the CRT exhibit (amywang2020.github.io/subtext/).
+
+  SHEET_URL is the Google Apps Script web app that saves each reader's answers to a
+  Google Sheet. Set it to '' to turn saving off. subtext/answers/index.html uses the
+  same URL to show the answers.
+
+  Settings you can add to the address:
+    ?crt=0                       turns off the fake scanlines (use on the real CRT)
+    ?color=amber / ?color=white  changes the screen color
+*/
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzCMvyBAeaY-ZjcOdlAdeTpmtymLI5riWOJhgJmr66l4caMI7ycrGl1DMPSODLeT7Pg/exec';
 
+/* The story, already split into screen-sized pages (they were sized to fit a
+   640×480 screen at 22px, so check the layout after editing). {A}, {B} and {C}
+   mark the sentences that change with the reader's answers; see slots below. */
 const pages = [
   "Very drunk or very high or, sometimes, on a lot of poppers, Junie is probably the most honest person she knows. Such occasions are the only ones where she is able to admit certain truths to herself. Mainly, that she is gluttonous. That she is desiring. That what she wants, historically, has never been good for her. Old boyfriends, another banana nut muffin from the dining hall, to never sleep again. It’s the excess of all of it, probably. How she wants, so badly, a consumption of things that would kill her if only she would give them a chance.",
   "   At two in the morning, she finds herself in the kitchen, eating a peach over the sink. She had had three earlier, after dinner, and they had all been exceptionally perfect. This particular one is overripe, soft and splitting apart in her hands. The juice of it has run down her wrist.\n   For a long time, Junie had genuinely prayed, genuinely and with her whole heart, to grow older, faster. Adulthood was a promised land. There, you could do what you wanted, be what you wanted. And Junie wanted so much. Shr wanted to live in the city. She wanted to make a lot of money.",
@@ -434,6 +448,11 @@ const pages = [
   "She has eaten all of the rice and most of the chicken, and there is a piece of broccoli caught between the tines of her fork. Around her, people are laughing, scraping their chairs against the floor, carrying bowls of cereal and half-eaten sandwiches back to the dish return. Through the enormous glass windows, she can see the trees outside, their leaves beginning to yellow at the edges. In another month, they will all fall off. She thinks of how much she will miss the summer. How she is always missing things, even before they are over."
 ];
 
+/* The three sentences that change with the answers.
+     pick     — which multiple-choice question decides it (0 = age, 1 = last spoke, 2 = how it ended)
+     texts    — texts[i] is used when the reader chooses option i of that question
+     amy      — Amy's original sentence, so the reveal screen can say who wrote it
+     excerpts — the shortened version shown on the reveal screen */
 const slots = {
   "A": {
     "pick": 0,
@@ -485,6 +504,7 @@ const slots = {
   }
 };
 
+/* The three multiple-choice questions that follow the typed one. */
 const questions = [
   { text: 'How old were you when it started?', options: ['14 or younger', '15 to 17', '18 or older', 'I’d rather not say'] },
   { text: 'When did you last speak to them?', options: ['This week', 'More than a month ago', 'Years ago', 'We still talk'] },
@@ -498,6 +518,7 @@ const answerInput = document.getElementById('answer');
 const commentInput = document.getElementById('comment-input');
 const pageText = document.getElementById('page-text');
 
+/* Where the current reader is in the flow, and what they've answered so far. */
 let screen = 'title';
 let question = 0;
 let answer = '';
@@ -540,6 +561,7 @@ function show(name) {
   }
 }
 
+/* Sends this reader's answers to the Google Sheet, once per reader. */
 function saveVisit() {
   if (saved || !intakeDone) {
     return;
@@ -738,11 +760,13 @@ function restart() {
   show('title');
 }
 
+/* After 3 minutes without input, go back to the title screen for the next reader. */
 function resetIdle() {
   clearTimeout(idleTimer);
   idleTimer = setTimeout(restart, 3 * 60 * 1000);
 }
 
+/* Keyboard controls for the exhibit. Every control can also be clicked, for the web. */
 document.addEventListener('keydown', function (event) {
   resetIdle();
   const key = event.key;

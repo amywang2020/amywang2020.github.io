@@ -94,6 +94,12 @@
 </main>
 
 <script>
+/*
+  Lists every reader's saved answers, newest first. It reads them from the Google
+  Sheet through the same Apps Script URL the story page saves to.
+  This page isn't linked anywhere and asks search engines not to list it,
+  but anyone with the address can open it.
+*/
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzCMvyBAeaY-ZjcOdlAdeTpmtymLI5riWOJhgJmr66l4caMI7ycrGl1DMPSODLeT7Pg/exec';
 
 const statusLine = document.getElementById('status');

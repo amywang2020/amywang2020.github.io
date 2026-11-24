@@ -4,121 +4,40 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Amy Jane Wang</title>
+  <link rel="stylesheet" href="css/site.css">
   <style>
-    :root {
-      --background: #ffffff;
-      --ink: #1a1817;
-      --ink-mid: #6b6560;
-      --font-main: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    }
-
+    /* Fill the screen so the photo can sit at the bottom-left corner. */
     body {
-      margin: 0;
-      background: var(--background);
-      color: var(--ink);
-      font-family: var(--font-main);
-    }
-
-    .page {
       min-height: 100vh;
-      box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      padding: clamp(28px, 4.5vw, 64px) clamp(24px, 7.8vw, 112px) clamp(48px, 8vw, 120px);
-    }
-
-    header {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 18px;
-    }
-
-    .site-title {
-      font-size: clamp(1.6rem, 2.2vw, 2rem);
-      font-weight: 400;
-      letter-spacing: -0.02em;
-      color: var(--ink);
-      text-decoration: none;
-    }
-
-    nav {
-      display: flex;
-      flex-wrap: wrap;
-      column-gap: 36px;
-      row-gap: 4px;
-      font-size: 0.82rem;
-      letter-spacing: 0.08em;
-    }
-
-    nav a {
-      display: inline-flex;
-      align-items: center;
-      min-height: 44px;
-      color: var(--ink);
-      text-decoration: none;
-    }
-
-    nav a:hover {
-      color: var(--ink-mid);
     }
 
     main {
       flex-grow: 1;
       display: flex;
       align-items: flex-end;
-      padding-top: clamp(32px, 5vw, 72px);
-    }
-
-    .picture {
-      position: relative;
-      width: 100%;
-      max-width: 662px;
-    }
-
-    .photo {
-      display: block;
-      width: 100%;
-      height: auto;
-    }
-
-    .hole {
-      position: absolute;
-      inset: 0;
-      background: var(--background);
-      -webkit-mask-image: url(photos/landing-hole.png);
-      mask-image: url(photos/landing-hole.png);
-      -webkit-mask-size: 100% 100%;
-      mask-size: 100% 100%;
-    }
-
-    .figure {
-      position: absolute;
-      left: 42.094%;
-      bottom: 0;
-      width: 35.429%;
-      height: auto;
+      padding: clamp(32px, 5vw, 72px) var(--side-margin) clamp(48px, 8vw, 120px);
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <header>
-      <a href="about.html" class="site-title">Amy Jane Wang</a>
-      <nav>
-        <a href="timeline.html">timeline</a>
-        <a href="works.html">publications</a>
-        <a href="https://www.linkedin.com/in/amjwang/" target="_blank">linkedin</a>
-        <a href="https://amyjwang.substack.com/" target="_blank">substack</a>
-      </nav>
-    </header>
-    <main>
-      <div class="picture">
-        <img class="photo" src="photos/landing-photo.jpg" alt="Night photo under a stone archway with Amy's shape cut out of it">
-        <div class="hole"></div>
-        <img class="figure" src="photos/landing-figure.png" alt="Amy Jane Wang">
-      </div>
-    </main>
-  </div>
+  <header class="site-header">
+    <a href="about.html" class="site-title">Amy Jane Wang</a>
+    <nav>
+      <a href="timeline.html">timeline</a>
+      <a href="works.html">publications</a>
+      <a href="https://www.linkedin.com/in/amjwang/" target="_blank" rel="noopener">linkedin</a>
+      <a href="https://amyjwang.substack.com/" target="_blank" rel="noopener">substack</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="cutout">
+      <img class="cutout-photo" src="photos/landing-photo.jpg" alt="Night photo under a stone archway with Amy's shape cut out of it">
+      <div class="cutout-hole"></div>
+      <img class="cutout-figure" src="photos/landing-figure.png" alt="Amy Jane Wang">
+    </div>
+  </main>
 </body>
 </html>

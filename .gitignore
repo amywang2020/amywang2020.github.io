@@ -1,0 +1,5 @@
+# macOS folder settings files
+.DS_Store
+
+# Scratch folder from working with Claude; not part of the site
+Claude outputs/
