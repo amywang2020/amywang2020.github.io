@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timeline — Amy Jane Wang</title>
+  <style>
+    :root {
+      --background: #ffffff;
+      --ink: #1a1817;
+      --ink-mid: #6b6560;
+      --ink-light: #a09890;
+      --blue: #6aafd4;
+      --font-main: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      --side-margin: clamp(24px, 7.8vw, 112px);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--background);
+      color: var(--ink);
+      font-family: var(--font-main);
+    }
+
+    main {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 18px;
+      padding: clamp(28px, 4.5vw, 64px) var(--side-margin) 0;
+    }
+
+    .site-title {
+      font-size: clamp(1.6rem, 2.2vw, 2rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      column-gap: 36px;
+      row-gap: 4px;
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+    }
+
+    nav a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    nav a.active {
+      text-decoration: underline;
+      text-underline-offset: 6px;
+    }
+
+    nav a:hover {
+      color: var(--ink-mid);
+    }
+
+    .scroller {
+      overflow-x: auto;
+      padding-top: clamp(24px, 4vw, 56px);
+    }
+
+    .track {
+      position: relative;
+    }
+
+    .track svg {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    .year {
+      position: absolute;
+      font-size: 0.95rem;
+      font-style: italic;
+      color: var(--ink-light);
+      background: var(--background);
+      padding: 0 8px;
+      transform: translate(-8px, -50%);
+    }
+
+    .entry {
+      position: absolute;
+      width: 180px;
+    }
+
+    .entry .entry-title {
+      font-size: 0.85rem;
+      line-height: 1.3;
+    }
+
+    .entry.literary .entry-title {
+      color: var(--blue);
+    }
+
+    .entry .entry-desc {
+      font-size: 0.78rem;
+      line-height: 1.5;
+      color: var(--ink-mid);
+      margin-top: 3px;
+    }
+
+    .entry ul {
+      margin: 4px 0 0;
+      padding-left: 16px;
+      font-size: 0.72rem;
+      line-height: 1.6;
+      color: var(--ink-mid);
+    }
+
+    .entry img {
+      display: block;
+      width: 160px;
+      height: 115px;
+      object-fit: cover;
+      margin-top: 8px;
+    }
+
+    .entry .entry-annotation {
+      display: inline-block;
+      font-size: 0.78rem;
+      color: var(--ink-mid);
+      margin-top: 4px;
+      transform: rotate(-1deg);
+    }
+
+    
+    #tl-canvas {
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .tl-entry {
+      position: absolute;
+      width: 270px;
+    }
+    .tl-entry.literary {
+      right: calc(50% + 80px);
+      text-align: right;
+    }
+    .tl-entry.professional {
+      left: calc(50% + 80px);
+      text-align: left;
+    }
+
+    .tl-entry .entry-year {
+      display: block;
+      font-family: var(--font-main);
+      font-size: 0.68rem;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      color: var(--ink-light);
+      margin-bottom: 3px;
+    }
+    .tl-entry .entry-title {
+      font-family: var(--font-main);
+      font-size: 0.88rem;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+    }
+    .tl-entry.literary .entry-title {
+      color: #6aafd4;
+    }
+    .tl-entry .entry-desc {
+      font-family: var(--font-main);
+      font-size: 0.82rem;
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--ink-mid);
+      margin-top: 2px;
+    }
+
+    .photo-wrap {
+      display: inline-block;
+      margin-top: 10px;
+    }
+    .tl-entry.literary    .photo-wrap { transform: rotate(-2deg); }
+    .tl-entry.professional .photo-wrap { transform: rotate(1.5deg); }
+
+    .photo-wrap img {
+      display: block;
+      width: 175px;
+      height: 125px;
+      object-fit: cover;
+
+    }
+
+    .photo-placeholder {
+      width: 175px;
+      height: 125px;
+      border: 1px solid var(--ink-light);
+      position: relative;
+      display: block;
+    }
+    .photo-placeholder svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .tl-entry .entry-items {
+      margin-top: 5px;
+      list-style: none;
+      padding: 0;
+    }
+    .tl-entry .entry-items li {
+      font-size: 0.72rem;
+      font-weight: 300;
+      line-height: 1.65;
+      color: var(--ink-mid);
+    }
+    .tl-entry .entry-items li.item-hidden { display: none; }
+
+    .tl-entry .entry-more {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      color: var(--ink-light);
+      margin-top: 4px;
+      cursor: pointer;
+      border-bottom: 1px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .tl-entry .entry-more:hover {
+      color: var(--ink);
+      border-bottom-color: var(--ink);
+    }
+
+    .tl-entry .entry-annotation {
+      display: inline-block;
+      font-family: var(--font-main);
+      font-size: 0.82rem;
+      color: var(--ink-mid);
+      margin-top: 5px;
+    }
+    .tl-entry.literary    .tl-entry .entry-annotation { transform: rotate(-1.2deg); }
+    .tl-entry.professional .tl-entry .entry-annotation { transform: rotate(0.9deg);  }
+
+    @keyframes tlFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0);   }
+    }
+    .tl-reveal {
+      animation: tlFadeIn 0.5s ease forwards;
+    }
+
+    #tl-canvas {
+      padding: 20px 0 120px;
+      box-sizing: content-box;
+    }
+
+    .hint {
+      margin: 8px var(--side-margin) 48px;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      color: var(--ink-light);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="about.html" class="site-title">Amy Jane Wang</a>
+  <nav>
+    <a href="timeline.html" class="active">timeline</a>
+    <a href="works.html">publications</a>
+    <a href="https://www.linkedin.com/in/amjwang/" target="_blank">linkedin</a>
+    <a href="https://amyjwang.substack.com/" target="_blank">substack</a>
+  </nav>
+</header>
+
+<main>
+  <div id="tl-canvas"></div>
+  <div class="scroller" id="scroller">
+    <div class="track" id="track"></div>
+  </div>
+  <p class="hint">scroll sideways →</p>
+</main>
+
+<script src="https://unpkg.com/roughjs@4.6.6/bundled/rough.js"></script>
+<script>
+const TIMELINE = [
+  { year: 2020, side: "literary", title: "Mentee, The Adroit Journal Summer Mentorship Program", desc: "Studied prose under Andrew Gretes", items: [], photo: "", annotation: "" },
+  { year: 2021, side: "literary", title: "Mentee, Iowa Young Writers' Studio", desc: "Studied poetry under Norah Claire Miller", items: [], photo: "", annotation: "" },
+  { year: 2022, side: "literary", title: "Community Media Scholar, Alliance for Chinese Americans", desc: "Advocated for AAPI communities through media and storytelling", items: [], photo: "", annotation: "" },
+  { year: 2023, side: "literary", title: "Editorial Intern, Peach Mag", desc: "Curated and edited submissions", items: [], photo: "", annotation: "" },
+  { year: 2023, side: "literary", title: "Prose Editor, The Farside Review", desc: "Curated fiction and prose", items: [], photo: "", annotation: "" },
+  { year: 2025, side: "literary", title: "Mentee, Levinthal Tutorial", desc: "Studied poetry under Dāshaun Washington", items: [], photo: "", annotation: "" },
+  { year: 2025, side: "literary", title: "Mentor, San Diego Association of Chinese Americans Summer Journalism Program", desc: "Mentored high school students in journalism", items: [], photo: "", annotation: "" },
+  { year: 2025, side: "literary", title: "Editorial Intern, East of Borneo Magazine", desc: "Edited content and publications", items: [], photo: "", annotation: "" },
+
+  { year: 2021, side: "professional", title: "Research Assistant, UCLA CRESST", desc: "Researched Asian American education and income inequality", items: [], photo: "", annotation: "", extraGap: 15 },
+  { year: 2021, side: "professional", title: "Communications Intern, Office of California State Assemblymember Phillip Chen", desc: "Wrote editorials and supported community advocacy", items: [], photo: "", annotation: "", extraGap: 0 },
+  { year: 2022, side: "professional", title: "Editor-in-Chief, Westview Nexus", desc: "Led the publication and its editorial direction", items: [], photo: "", annotation: "" },
+  { year: 2022, side: "professional", title: "Editorial Intern, The San Diego Union-Tribune", desc: "Reported and contributed to the newsroom", items: [], photo: "", annotation: "" },
+  { year: 2023, side: "professional", title: "Matriculated at Stanford University", desc: "", items: [], photo: "", annotation: "" },
+  { year: 2024, side: "professional", title: "Advancement and Analytics Intern, Sierra Club", desc: "Supported fundraising operations and donor analytics", items: [], photo: "", annotation: "" },
+  { year: 2025, side: "professional", title: "Intern, Pentagon Federal Credit Union", desc: "Built AI integrations and operations infrastructure", items: [], photo: "", annotation: "" },
+  { year: 2026, side: "professional", title: "Research Assistant @ Stanford's Virtual Human Interaction Lab", desc: "", items: [], photo: "", annotation: "", extraGap: -70 },
+  { year: 2026, side: "professional", title: "Incoming Summer Investment Banking Analyst, Barclays", desc: "Joining the West Coast Financial Sponsors team", items: [], photo: "", annotation: "" }
+];
+
+const SETTINGS = {
+  padTop:       70,   // px before first entry
+  padBottom:   100,   // px after last entry
+  minRowGap:   120,   // minimum vertical gap between entries on the same side
+  branchLen:    75,   // px the horizontal tick extends from center
+  dotDiameter:   8,   // px diameter of dot on center line
+  previewItems:  3,   // how many list items to show before "...and N more"
+};
+
+TIMELINE.sort((a, b) => a.year - b.year);
+
+const SVG_W = 220;
+const CX    = SVG_W / 2;
+
+TIMELINE.filter(i => i.side === 'literary')
+  .forEach((item, i) => { item.lineX = CX + ((i % 2 === 0) ? -14 : 14); });
+TIMELINE.filter(i => i.side === 'professional')
+  .forEach(item => { item.lineX = CX; });
+
+function buildEntryHTML(item) {
+  let html = '';
+  if (item.title) html += `<div class="entry-title">${item.title}</div>`;
+  if (item.desc)  html += `<div class="entry-desc">${item.desc}</div>`;
+  if (item.items && item.items.length > 0) {
+    html += '<ul class="entry-items">';
+    item.items.forEach((it, idx) => {
+      const hidden = idx >= SETTINGS.previewItems ? ' item-hidden' : '';
+      html += `<li class="${hidden}">${it}</li>`;
+    });
+    html += '</ul>';
+    if (item.items.length > SETTINGS.previewItems) {
+      const extra = item.items.length - SETTINGS.previewItems;
+      html += `<span class="entry-more">+ ${extra} more</span>`;
+    }
+  }
+  if (item.photo === 'placeholder') {
+    html += `<div class="photo-wrap"><div class="photo-placeholder">
+      <svg viewBox="0 0 175 125" xmlns="http://www.w3.org/2000/svg" fill="none">
+        <line x1="2" y1="2" x2="173" y2="123" stroke="#a09890" stroke-width="1"/>
+        <line x1="173" y1="2" x2="2" y2="123" stroke="#a09890" stroke-width="1"/>
+      </svg></div></div>`;
+  } else if (item.photo) {
+    html += `<div class="photo-wrap"><img src="${item.photo}" alt="${item.title}" loading="lazy"></div>`;
+  }
+  if (item.annotation) html += `<span class="entry-annotation">${item.annotation}</span>`;
+  return html;
+}
+
+function starPts(cx, cy, outerR, innerR, n, rotDeg) {
+  const rot = (rotDeg || 0) * Math.PI / 180;
+  const pts = [];
+  for (let i = 0; i < n * 2; i++) {
+    const angle = (i * Math.PI / n) - Math.PI / 2 + rot;
+    const r = i % 2 === 0 ? outerR : innerR;
+    pts.push([cx + r * Math.cos(angle), cy + r * Math.sin(angle)]);
+  }
+  return pts;
+}
+
+let scrollHandler = null;
+let resizeTimer;
+
+function renderVertical(startX) {
+  const canvas = document.getElementById('tl-canvas');
+  canvas.innerHTML = '';
+
+  const navLeft  = startX;
+  const navWidth = window.innerWidth - startX * 2;
+  canvas.style.width       = navWidth + 'px';
+  canvas.style.maxWidth    = navWidth + 'px';
+  canvas.style.marginLeft  = navLeft + 'px';
+  canvas.style.marginRight = '0';
+
+  const entryWidth = Math.max(80, Math.floor(navWidth / 2 - SETTINGS.branchLen - 10));
+
+  const entryElems = new Map();
+  for (const item of TIMELINE) {
+    const el = document.createElement('div');
+    el.className    = `tl-entry ${item.side}`;
+    el.style.width  = entryWidth + 'px';
+    el.style.top    = '0px';
+    el.style.visibility = 'hidden';
+    if (item.side === 'professional') {
+      el.style.left  = `calc(50% + ${(item.lineX - CX) + SETTINGS.branchLen + 5}px)`;
+    } else {
+      el.style.right = `calc(50% + ${SETTINGS.branchLen + 5}px)`;
+    }
+    el.innerHTML = buildEntryHTML(item);
+    canvas.appendChild(el);
+    entryElems.set(item, el);
+  }
+
+  const GAP      = 28; // px between bottom of one entry and top of next
+  const YEAR_GAP = 32; // extra px between year groups
+  const byYear = {};
+  TIMELINE.forEach(e => {
+    if (!byYear[e.year]) byYear[e.year] = { literary: [], professional: [] };
+    byYear[e.year][e.side].push(e);
+  });
+  const sortedYears = Object.keys(byYear).map(Number).sort((a, b) => a - b);
+
+  let litY = SETTINGS.padTop;
+  let proY = SETTINGS.padTop;
+  const yearPositions = [];
+
+  for (const year of sortedYears) {
+    const lit = byYear[year].literary;
+    const pro = byYear[year].professional;
+    const extra = yearPositions.length > 0 ? YEAR_GAP : 0;
+    const yearY = Math.max(litY, proY) + extra;
+    yearPositions.push({ year, y: yearY });
+    const proOffset = lit.length > 0 ? 65 : 0;
+
+    let y = Math.max(litY, yearY);
+    for (const item of lit) {
+      item.y = y;
+      const h = entryElems.get(item).getBoundingClientRect().height;
+      y += Math.max(h + 8, h + GAP + (item.extraGap || 0));
+    }
+    if (lit.length > 0) litY = y;
+
+    y = Math.max(proY, yearY + proOffset);
+    for (const item of pro) {
+      item.y = y;
+      const h = entryElems.get(item).getBoundingClientRect().height;
+      y += Math.max(h + 8, h + GAP + (item.extraGap || 0));
+    }
+    if (pro.length > 0) proY = y;
+  }
+
+  const totalHeight = Math.max(litY, proY) + SETTINGS.padBottom;
+  canvas.style.height = totalHeight + 'px';
+
+  for (const item of TIMELINE) {
+    const el    = entryElems.get(item);
+    const delay = (item.y / 1000).toFixed(2);
+    el.style.top        = (item.y + 14) + 'px';
+    el.style.visibility = '';
+    el.style.opacity = '0';
+
+    const moreBtn = el.querySelector('.entry-more');
+    if (moreBtn) {
+      moreBtn.addEventListener('click', () => {
+        el.querySelectorAll('.item-hidden').forEach(li => li.classList.remove('item-hidden'));
+        moreBtn.remove();
+      });
+    }
+  }
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width',  SVG_W);
+  svg.setAttribute('height', totalHeight);
+  Object.assign(svg.style, {
+    position: 'absolute', top: '0', left: '50%',
+    transform: 'translateX(-50%)', overflow: 'visible', pointerEvents: 'none',
+  });
+  canvas.appendChild(svg);
+
+  const rc       = rough.svg(svg);
+  const INK      = '#272320';
+  const LIT_BLUE = '#6aafd4';
+  const svgNS    = 'http://www.w3.org/2000/svg';
+
+  const defs = document.createElementNS(svgNS, 'defs');
+  const filt = document.createElementNS(svgNS, 'filter');
+  filt.setAttribute('id', 'crayon');
+  filt.setAttribute('x', '-15%'); filt.setAttribute('y', '-5%');
+  filt.setAttribute('width', '130%'); filt.setAttribute('height', '110%');
+
+  const turb = document.createElementNS(svgNS, 'feTurbulence');
+  turb.setAttribute('type', 'fractalNoise');
+  turb.setAttribute('baseFrequency', '0.85');
+  turb.setAttribute('numOctaves', '4');
+  turb.setAttribute('result', 'noise');
+
+  const cm = document.createElementNS(svgNS, 'feColorMatrix');
+  cm.setAttribute('type', 'matrix');
+  cm.setAttribute('values', '0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 22 -8');
+  cm.setAttribute('in', 'noise');
+  cm.setAttribute('result', 'grain');
+
+  const comp = document.createElementNS(svgNS, 'feComposite');
+  comp.setAttribute('operator', 'in');
+  comp.setAttribute('in', 'SourceGraphic');
+  comp.setAttribute('in2', 'grain');
+  comp.setAttribute('result', 'textured');
+
+  const turb2 = document.createElementNS(svgNS, 'feTurbulence');
+  turb2.setAttribute('type', 'fractalNoise');
+  turb2.setAttribute('baseFrequency', '0.04');
+  turb2.setAttribute('numOctaves', '2');
+  turb2.setAttribute('result', 'wave');
+  const disp = document.createElementNS(svgNS, 'feDisplacementMap');
+  disp.setAttribute('in', 'textured');
+  disp.setAttribute('in2', 'wave');
+  disp.setAttribute('scale', '6');
+  disp.setAttribute('xChannelSelector', 'R');
+  disp.setAttribute('yChannelSelector', 'G');
+  filt.appendChild(turb); filt.appendChild(cm); filt.appendChild(comp);
+  filt.appendChild(turb2); filt.appendChild(disp);
+  defs.appendChild(filt);
+  svg.appendChild(defs);
+
+  const lineEnd = totalHeight - SETTINGS.padBottom + 20;
+
+  svg.appendChild(rc.line(
+    CX, SETTINGS.padTop - 20, CX, lineEnd,
+    { stroke: INK, strokeWidth: 1.2, roughness: 0.4, bowing: 0 }
+  ));
+
+  const litItems = TIMELINE.filter(i => i.side === 'literary').sort((a, b) => a.y - b.y);
+  if (litItems.length > 0) {
+    const pts = [[CX, litItems[0].y - 40]];
+    litItems.forEach(item => pts.push([item.lineX, item.y + 23]));
+    pts.push([CX, lineEnd]);
+    const crayonG = document.createElementNS(svgNS, 'g');
+    crayonG.setAttribute('filter', 'url(#crayon)');
+    for (let pass = 0; pass < 4; pass++) {
+      const stroke = rc.curve(pts, {
+        stroke: LIT_BLUE, strokeWidth: 4, roughness: 2.2,
+        bowing: 0.4, disableMultiStroke: true,
+      });
+      stroke.style.opacity = '0.4';
+      crayonG.appendChild(stroke);
+    }
+    svg.appendChild(crayonG);
+  }
+
+  for (let i = 0; i < 3; i++) {
+    const dotY = lineEnd + 12 + i * 9;
+    svg.appendChild(rc.circle(CX, dotY, 3,
+      { stroke: INK, strokeWidth: 0.8, fill: INK, fillStyle: 'solid', roughness: 0.6 }));
+    svg.appendChild(rc.circle(CX, dotY, 3,
+      { stroke: LIT_BLUE, strokeWidth: 0.8, fill: LIT_BLUE, fillStyle: 'solid', roughness: 0.6 }));
+  }
+
+  for (const { year, y } of yearPositions) {
+    const label = document.createElementNS(svgNS, 'text');
+    label.setAttribute('x', CX + 14);
+    label.setAttribute('y', y + 4);
+    label.setAttribute('text-anchor', 'start');
+    label.setAttribute('font-family', "'Helvetica Neue', Helvetica, Arial, sans-serif");
+    label.setAttribute('font-size', '22');
+    label.setAttribute('font-style', 'italic');
+    label.setAttribute('letter-spacing', '0.5');
+    label.setAttribute('fill', '#a09890');
+    label.textContent = year;
+    svg.appendChild(label);
+  }
+
+  const starMarkers = [];
+  let starIdx = 0;
+  for (const item of TIMELINE) {
+    const y     = item.y + 23;
+    const dir   = item.side === 'literary' ? -1 : 1;
+    const color = item.side === 'literary' ? LIT_BLUE : INK;
+    const bg    = item.side === 'literary' ? '#eef6fb' : '#ffffff';
+    const starX = item.lineX || CX;
+    const delay = (item.y / 1000).toFixed(2);
+    const rotDeg = (starIdx++ * 19) % 45;
+
+    const tickLen = item.side === 'literary'
+      ? item.lineX - CX + SETTINGS.branchLen
+      : SETTINGS.branchLen;
+    const tick = rc.line(starX, y, starX + dir * tickLen, y,
+      { stroke: color, strokeWidth: 1.0, roughness: 0.5, bowing: 0 });
+    svg.appendChild(tick);
+
+    const star = rc.polygon(starPts(starX, y, 14, 6, 5, rotDeg),
+      { stroke: color, strokeWidth: 1.0, fill: bg, fillStyle: 'solid', roughness: 0.8 });
+    star.style.transition = 'filter 0.25s ease';
+    svg.appendChild(star);
+    starMarkers.push({ el: star, svgY: y });
+  }
+
+  starMarkers.sort((a, b) => a.svgY - b.svgY);
+
+  if (scrollHandler) window.removeEventListener('scroll', scrollHandler, { passive: true });
+  scrollHandler = function updateGlow() {
+    const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    const t   = Math.max(0, Math.min(1, window.scrollY / maxScroll));
+    const idx = Math.round(t * (starMarkers.length - 1));
+    const closest = starMarkers[idx].el;
+    for (const { el } of starMarkers) {
+      el.style.filter = el === closest
+        ? 'drop-shadow(0 0 3px #ffd700) drop-shadow(0 0 10px #ffd700) drop-shadow(0 0 20px #ffaa00)'
+        : '';
+    }
+  };
+  window.addEventListener('scroll', scrollHandler, { passive: true });
+  scrollHandler();
+}
+
+let tlObserver = null;
+
+function setupObserver() {
+  if (tlObserver) tlObserver.disconnect();
+  const targets = document.querySelectorAll('.tl-entry');
+  tlObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('tl-reveal');
+        entry.target.style.opacity = '';
+        tlObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.01 });
+  targets.forEach(el => tlObserver.observe(el));
+}
+
+const ENTRY_WIDTH = 180;
+const ENTRY_GAP = 32;
+const YEAR_LABEL_WIDTH = 64;
+const MIN_YEAR_WIDTH = 140;
+const TICK = 44;
+const EDGE = 40;
+
+function entryHTML(item) {
+  let html = '<div class="entry-title">' + item.title + '</div>';
+  if (item.desc) {
+    html += '<div class="entry-desc">' + item.desc + '</div>';
+  }
+  if (item.items && item.items.length > 0) {
+    html += '<ul>';
+    for (const line of item.items) {
+      html += '<li>' + line + '</li>';
+    }
+    html += '</ul>';
+  }
+  if (item.photo) {
+    html += '<img src="' + item.photo + '" alt="' + item.title + '" loading="lazy">';
+  }
+  if (item.annotation) {
+    html += '<span class="entry-annotation">' + item.annotation + '</span>';
+  }
+  return html;
+}
+
+function starPoints(cx, cy, outer, inner, rotation) {
+  const points = [];
+  for (let i = 0; i < 10; i++) {
+    const angle = (i * Math.PI / 5) - Math.PI / 2 + rotation;
+    const radius = i % 2 === 0 ? outer : inner;
+    points.push([cx + radius * Math.cos(angle), cy + radius * Math.sin(angle)]);
+  }
+  return points;
+}
+
+function drawTimeline() {
+  const track = document.getElementById('track');
+  track.innerHTML = '';
+  const startX = document.querySelector('.site-title').getBoundingClientRect().left;
+
+  const verticalCanvas = document.getElementById('tl-canvas');
+  if (window.innerWidth < 700) {
+    document.querySelector('.hint').style.display = 'none';
+    document.getElementById('scroller').style.display = 'none';
+    verticalCanvas.style.display = '';
+    renderVertical(startX);
+    setupObserver();
+  } else {
+    if (scrollHandler) {
+      window.removeEventListener('scroll', scrollHandler);
+      scrollHandler = null;
+    }
+    verticalCanvas.style.display = 'none';
+    verticalCanvas.innerHTML = '';
+    document.querySelector('.hint').style.display = '';
+    document.getElementById('scroller').style.display = '';
+    drawHorizontal(track, startX);
+  }
+}
+
+function drawStar(rc, svg, x, y, isLiterary, starNumber) {
+  const color = isLiterary ? '#6aafd4' : '#1a1817';
+  const fill = isLiterary ? '#eef6fb' : '#ffffff';
+  const rotation = (starNumber * 19 % 45) * Math.PI / 180;
+  svg.appendChild(rc.polygon(starPoints(x, y, 11, 5, rotation), { stroke: color, strokeWidth: 1, fill: fill, fillStyle: 'solid', roughness: 0.6 }));
+}
+
+function addCrayonFilter(svg) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const defs = document.createElementNS(ns, 'defs');
+  const filter = document.createElementNS(ns, 'filter');
+  filter.setAttribute('id', 'crayon');
+  filter.setAttribute('x', '-15%');
+  filter.setAttribute('y', '-15%');
+  filter.setAttribute('width', '130%');
+  filter.setAttribute('height', '130%');
+
+  const noise = document.createElementNS(ns, 'feTurbulence');
+  noise.setAttribute('type', 'fractalNoise');
+  noise.setAttribute('baseFrequency', '0.85');
+  noise.setAttribute('numOctaves', '4');
+  noise.setAttribute('result', 'noise');
+
+  const grain = document.createElementNS(ns, 'feColorMatrix');
+  grain.setAttribute('type', 'matrix');
+  grain.setAttribute('values', '0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 22 -8');
+  grain.setAttribute('in', 'noise');
+  grain.setAttribute('result', 'grain');
+
+  const textured = document.createElementNS(ns, 'feComposite');
+  textured.setAttribute('operator', 'in');
+  textured.setAttribute('in', 'SourceGraphic');
+  textured.setAttribute('in2', 'grain');
+  textured.setAttribute('result', 'textured');
+
+  const wave = document.createElementNS(ns, 'feTurbulence');
+  wave.setAttribute('type', 'fractalNoise');
+  wave.setAttribute('baseFrequency', '0.04');
+  wave.setAttribute('numOctaves', '2');
+  wave.setAttribute('result', 'wave');
+
+  const shift = document.createElementNS(ns, 'feDisplacementMap');
+  shift.setAttribute('in', 'textured');
+  shift.setAttribute('in2', 'wave');
+  shift.setAttribute('scale', '6');
+  shift.setAttribute('xChannelSelector', 'R');
+  shift.setAttribute('yChannelSelector', 'G');
+
+  filter.appendChild(noise);
+  filter.appendChild(grain);
+  filter.appendChild(textured);
+  filter.appendChild(wave);
+  filter.appendChild(shift);
+  defs.appendChild(filter);
+  svg.appendChild(defs);
+}
+
+function drawBlueLine(rc, svg, points) {
+  const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  group.setAttribute('filter', 'url(#crayon)');
+  for (let pass = 0; pass < 4; pass++) {
+    const stroke = rc.curve(points, { stroke: '#6aafd4', strokeWidth: 4, roughness: 2.2, bowing: 0.4, disableMultiStroke: true });
+    stroke.style.opacity = '0.4';
+    group.appendChild(stroke);
+  }
+  svg.appendChild(group);
+}
+
+function drawEndDots(rc, svg, x, y, across) {
+  for (let i = 0; i < 3; i++) {
+    const dotX = across ? x + 12 + i * 9 : x;
+    const dotY = across ? y : y + 12 + i * 9;
+    svg.appendChild(rc.circle(dotX, dotY, 3, { stroke: '#272320', strokeWidth: 0.8, fill: '#272320', fillStyle: 'solid', roughness: 0.6 }));
+    svg.appendChild(rc.circle(dotX, dotY, 3, { stroke: '#6aafd4', strokeWidth: 0.8, fill: '#6aafd4', fillStyle: 'solid', roughness: 0.6 }));
+  }
+}
+
+function drawHorizontal(track, startX) {
+  const years = [];
+  for (const item of TIMELINE) {
+    if (!years.includes(item.year)) {
+      years.push(item.year);
+    }
+  }
+  years.sort();
+
+  const entries = [];
+  const yearPositions = [];
+  let rightEdge = { literary: startX, professional: startX };
+  let lastYearX = startX - MIN_YEAR_WIDTH;
+
+  for (const year of years) {
+    const yearX = Math.max(lastYearX + MIN_YEAR_WIDTH, rightEdge.literary, rightEdge.professional);
+    yearPositions.push({ year: year, x: yearX });
+    lastYearX = yearX;
+    for (const side of ['literary', 'professional']) {
+      let stagger = 0;
+      if (side === 'professional') {
+        stagger = (ENTRY_WIDTH + ENTRY_GAP) / 2;
+      }
+      let x = Math.max(yearX + YEAR_LABEL_WIDTH + stagger, rightEdge[side]);
+      for (const item of TIMELINE) {
+        if (item.year === year && item.side === side) {
+          entries.push({ item: item, x: x });
+          x = x + ENTRY_WIDTH + ENTRY_GAP;
+        }
+      }
+      rightEdge[side] = Math.max(rightEdge[side], x);
+    }
+  }
+
+  for (const entry of entries) {
+    const el = document.createElement('div');
+    el.className = 'entry ' + entry.item.side;
+    el.innerHTML = entryHTML(entry.item);
+    el.style.left = entry.x + 'px';
+    track.appendChild(el);
+    entry.el = el;
+  }
+
+  let tallestAbove = 0;
+  let tallestBelow = 0;
+  for (const entry of entries) {
+    const height = entry.el.offsetHeight;
+    if (entry.item.side === 'literary') {
+      tallestAbove = Math.max(tallestAbove, height);
+    } else {
+      tallestBelow = Math.max(tallestBelow, height);
+    }
+  }
+
+  const lineY = EDGE + tallestAbove + TICK;
+  const width = Math.max(rightEdge.literary, rightEdge.professional) + startX;
+  const height = lineY + TICK + tallestBelow + EDGE;
+  track.style.width = width + 'px';
+  track.style.height = height + 'px';
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', width);
+  svg.setAttribute('height', height);
+  track.insertBefore(svg, track.firstChild);
+  const rc = rough.svg(svg);
+
+  addCrayonFilter(svg);
+  const lineEnd = width - startX;
+  svg.appendChild(rc.line(startX, lineY, lineEnd, lineY, { stroke: '#272320', strokeWidth: 1.2, roughness: 0.4, bowing: 0 }));
+
+  entries.sort(function (a, b) { return a.x - b.x; });
+  const bluePoints = [[startX, lineY]];
+  let literaryNumber = 0;
+  let starNumber = 0;
+  for (const entry of entries) {
+    const isLiterary = entry.item.side === 'literary';
+    const color = isLiterary ? '#6aafd4' : '#1a1817';
+    const starX = entry.x + 8;
+    let starY = lineY;
+    if (isLiterary) {
+      starY = lineY + (literaryNumber % 2 === 0 ? -14 : 14);
+      literaryNumber = literaryNumber + 1;
+      bluePoints.push([starX, starY]);
+    }
+    const tickEnd = isLiterary ? lineY - TICK + 4 : lineY + TICK - 4;
+    svg.appendChild(rc.line(starX, starY, starX, tickEnd, { stroke: color, strokeWidth: 1, roughness: 0.5, bowing: 0 }));
+    entry.starX = starX;
+    entry.starY = starY;
+
+    if (isLiterary) {
+      entry.el.style.top = (lineY - TICK - entry.el.offsetHeight) + 'px';
+    } else {
+      entry.el.style.top = (lineY + TICK) + 'px';
+    }
+  }
+  bluePoints.push([lineEnd, lineY]);
+  drawBlueLine(rc, svg, bluePoints);
+  drawEndDots(rc, svg, lineEnd, lineY, true);
+
+  for (const entry of entries) {
+    drawStar(rc, svg, entry.starX, entry.starY, entry.item.side === 'literary', starNumber);
+    starNumber = starNumber + 1;
+  }
+
+  for (const position of yearPositions) {
+    const label = document.createElement('div');
+    label.className = 'year';
+    label.textContent = position.year;
+    label.style.left = position.x + 'px';
+    label.style.top = lineY + 'px';
+    track.appendChild(label);
+  }
+}
+
+const scroller = document.getElementById('scroller');
+scroller.addEventListener('wheel', function (event) {
+  const canScrollSideways = scroller.scrollWidth > scroller.clientWidth;
+  if (canScrollSideways && Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+    scroller.scrollLeft = scroller.scrollLeft + event.deltaY;
+    event.preventDefault();
+  }
+}, { passive: false });
+
+let lastWidth = window.innerWidth;
+window.addEventListener('resize', function () {
+  if (window.innerWidth !== lastWidth) {
+    lastWidth = window.innerWidth;
+    drawTimeline();
+  }
+});
+
+window.addEventListener('load', drawTimeline);
+</script>
+</body>
+</html>
