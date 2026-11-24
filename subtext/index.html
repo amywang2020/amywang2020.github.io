@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Subtext · Amy Wang</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<style>
+  body {
+    --bg: #050a06;
+    --fg: #7dffa0;
+    --dim: #3fa866;
+    --faint: #1e5a35;
+    --glow: rgba(125, 255, 160, 0.45);
+  }
+
+  body.amber {
+    --bg: #0a0703;
+    --fg: #ffc15e;
+    --dim: #b07a2a;
+    --faint: #5a3e14;
+    --glow: rgba(255, 193, 94, 0.45);
+  }
+
+  body.white {
+    --bg: #08080a;
+    --fg: #e6e6e0;
+    --dim: #9a9a94;
+    --faint: #4a4a46;
+    --glow: rgba(230, 230, 224, 0.35);
+  }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #screen {
+    position: relative;
+    flex-shrink: 0;
+    width: 640px;
+    height: 480px;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'VT323', ui-monospace, monospace;
+    font-size: 26px;
+    line-height: 1.3;
+    text-shadow: 0 0 6px var(--glow);
+    border-radius: 24px;
+  }
+
+  body.flat #screen {
+    text-shadow: none;
+    border-radius: 0;
+  }
+
+  .inner {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 24px 40px 14px;
+  }
+
+  .view {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .view[hidden] {
+    display: none;
+  }
+
+  .bar {
+    display: flex;
+    justify-content: space-between;
+    font-size: 22px;
+    color: var(--dim);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--faint);
+  }
+
+  .foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 44px;
+    border-top: 1px solid var(--faint);
+    font-size: 22px;
+  }
+
+  .foot-left {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .dim {
+    color: var(--dim);
+  }
+
+  button {
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    text-shadow: inherit;
+    text-align: left;
+    cursor: pointer;
+    min-height: 44px;
+  }
+
+  .cursor {
+    animation: blink 1s steps(1) infinite;
+  }
+
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  .title-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  h1 {
+    margin: 0;
+    font-weight: 400;
+    font-size: 80px;
+    line-height: 1;
+    letter-spacing: 10px;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .small {
+    font-size: 22px;
+  }
+
+  .ask-body {
+    flex-grow: 1;
+    padding-top: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .answer-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--faint);
+  }
+
+  #answer {
+    flex-grow: 1;
+    min-width: 0;
+    min-height: 44px;
+    background: none;
+    border: 0;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    text-shadow: inherit;
+    caret-color: var(--fg);
+  }
+
+  .choose-body {
+    flex-grow: 1;
+    padding-top: 22px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #question {
+    margin-bottom: 14px;
+  }
+
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  #page-box {
+    flex-grow: 1;
+    padding-top: 16px;
+    font-size: 22px;
+    white-space: pre-wrap;
+  }
+
+  .end-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 18px;
+  }
+
+  .end-word {
+    font-size: 56px;
+    line-height: 1;
+    letter-spacing: 8px;
+  }
+
+  .reveal-body {
+    flex-grow: 1;
+    padding-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 22px;
+  }
+
+  #you-typed {
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-height: 57px;
+  }
+
+  .row-page {
+    width: 52px;
+    flex-shrink: 0;
+    color: var(--dim);
+  }
+
+  .row-label {
+    width: 74px;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    padding: 0 6px;
+    text-shadow: none;
+  }
+
+  .row-label.model {
+    background: var(--fg);
+    color: var(--bg);
+  }
+
+  .row-excerpt {
+    flex-grow: 1;
+    min-width: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  #summary {
+    margin-top: 6px;
+  }
+
+  .scanlines, .vignette {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .scanlines {
+    background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.3) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) 3px);
+  }
+
+  .vignette {
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.6) 100%);
+  }
+
+  body.flat .scanlines, body.flat .vignette {
+    display: none;
+  }
+</style>
+</head>
+<body>
+<main id="screen">
+  <div class="inner">
+
+    <section id="title" class="view">
+      <div class="title-body">
+        <h1>SUBTEXT</h1>
+        <p class="dim">stories written again for each reader</p>
+        <p class="dim small" style="margin-top: 32px">Amy Wang · Stanford Honors in the Arts, 2027</p>
+      </div>
+      <div class="foot">
+        <button type="button" id="begin-button">&gt; press any key to begin<span class="cursor" aria-hidden="true">█</span></button>
+      </div>
+    </section>
+
+    <section id="ask" class="view" hidden>
+      <div class="bar"><span>BEFORE YOU READ</span><span>1 / 4</span></div>
+      <div class="ask-body">
+        <label for="answer">Think of the strongest love you’ve ever felt. In a few words, what was it?</label>
+        <div class="answer-line">
+          <span class="dim" aria-hidden="true">&gt;</span>
+          <input id="answer" type="text" maxlength="80" autocomplete="off" spellcheck="false">
+        </div>
+        <p class="dim small">A person, a place, a year. Anything.</p>
+      </div>
+      <div class="foot">
+        <button type="button" id="answer-button"><span class="dim">[enter]</span> continue</button>
+        <span class="dim">Nothing you type is saved.</span>
+      </div>
+    </section>
+
+    <section id="choose" class="view" hidden>
+      <div class="bar"><span>BEFORE YOU READ</span><span id="question-number">2 / 4</span></div>
+      <div class="choose-body">
+        <p id="question"></p>
+        <button type="button" class="option" data-choice="0"><span class="dim">[1]</span><span class="option-text"></span></button>
+        <button type="button" class="option" data-choice="1"><span class="dim">[2]</span><span class="option-text"></span></button>
+        <button type="button" class="option" data-choice="2"><span class="dim">[3]</span><span class="option-text"></span></button>
+        <button type="button" class="option" data-choice="3"><span class="dim">[4]</span><span class="option-text"></span></button>
+      </div>
+      <div class="foot dim">Nothing you answer is saved.</div>
+    </section>
+
+    <section id="reading" class="view" hidden>
+      <div class="bar"><span>UNTITLED</span><span id="page-number">page 1 / 1</span></div>
+      <div id="page-box"><span id="page-text"></span><span class="cursor" aria-hidden="true">█</span></div>
+      <div class="foot">
+        <div class="foot-left">
+          <button type="button" id="next-button"><span class="dim">[space]</span> <span id="next-label">next</span></button>
+          <button type="button" id="back-button"><span class="dim">[b]</span> back</button>
+          <button type="button" class="restart-button"><span class="dim">[esc]</span> start over</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="end" class="view" hidden>
+      <div class="end-body">
+        <p class="end-word">END</p>
+        <p style="max-width: 470px">This version was written for you. No one else will read it.</p>
+      </div>
+      <div class="foot">
+        <div class="foot-left">
+          <button type="button" id="reveal-button"><span class="dim">[r]</span> see who wrote what</button>
+          <button type="button" class="restart-button"><span class="dim">[esc]</span> next reader</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="reveal" class="view" hidden>
+      <div class="bar"><span>WHO WROTE WHAT</span><span>UNTITLED</span></div>
+      <div class="reveal-body">
+        <p id="you-typed" class="dim"></p>
+        <button type="button" class="row" data-row="0"><span class="row-page"></span><span class="row-label"></span><span class="row-excerpt"></span></button>
+        <button type="button" class="row" data-row="1"><span class="row-page"></span><span class="row-label"></span><span class="row-excerpt"></span></button>
+        <button type="button" class="row" data-row="2"><span class="row-page"></span><span class="row-label"></span><span class="row-excerpt"></span></button>
+        <p id="summary" class="dim"></p>
+      </div>
+      <div class="foot">
+        <div class="foot-left">
+          <span><span class="dim">[1–3]</span> see it in place</span>
+          <button type="button" class="restart-button"><span class="dim">[esc]</span> next reader</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+</main>
+
+<script>
+const pages = [
+  "Very drunk or very high or, sometimes, on a lot of poppers, Junie is probably the most honest person she knows. Such occasions are the only ones where she is able to admit certain truths to herself. Mainly, that she is gluttonous. That she is desiring. That what she wants, historically, has never been good for her. Old boyfriends, another banana nut muffin from the dining hall, to never sleep again. It’s the excess of all of it, probably. How she wants, so badly, a consumption of things that would kill her if only she would give them a chance.",
+  "   At two in the morning, she finds herself in the kitchen, eating a peach over the sink. She had had three earlier, after dinner, and they had all been exceptionally perfect. This particular one is overripe, soft and splitting apart in her hands. The juice of it has run down her wrist.\n   For a long time, Junie had genuinely prayed, genuinely and with her whole heart, to grow older, faster. Adulthood was a promised land. There, you could do what you wanted, be what you wanted. And Junie wanted so much. Shr wanted to live in the city. She wanted to make a lot of money.",
+  "She wanted to be thin or adored, ideally both simultaneously, though she was almost certain the former would preclude the latter. Back then, she had imagined that desire was something that might eventually run dry. Surely, there would come a point when she would have accumulated enough. And then she would finally be able to lie down in the middle of her life and roll herself around it and feel, finally, satisfied. At twenty, in her third year of college, she has found that the opposite is true. Every time she gets something she wants, another wanting opens up beneath it, even wider than the first.\n   She licks her fingers, one by one.",
+  "She thinks, suddenly, that she could call him. {B} Still, the thought is sudden and impossibly bright. She imagines the blue light of her phone. The trembling dial tone. She imagines him answering, his voice thick with sleep.\n   Junie looks down at the peach pit in her palm. There are still a few small shreds of peach-flesh clinging to it, red and glistening. She holds it for another moment. Then she puts the pit in her mouth and sucks.",
+  "Junie’s friend Sarah is the one who introduces her to the drug, first. This is no surprise to anyone except maybe Sarah herself, because Sarah has always been known as a little bit of a sex-pervert tech-obsessed freak.\n   It’s a crazy, crazy pill, Sarah whispers to Junie, when the two of them are sitting shoulder-to-shoulder in lecture. Maybe the craziest pill, ever.\n   What kind of crazy? Junie asks.\n   Sarah takes out her phone and tilts the screen toward the two of them. Junie sees a website with a white background, pink scrolling text that is too small to read.",
+  "The rest of the page is almost entirely blank, except for a photograph of a woman lying on her back in a wide, green field. Her eyes are closed. She looks as if she is in a state of ultimate repose.\n   It’s a pill that makes you fall in love.\n   Junie raises her eyebrows.\n   Like, literally. It recreates the exact neurological experience of romantic love. I think it's some kind of synthetic oxytocin thing. Or dopamine.\n   That sounds terrible.\n   Well you’d think that. But I tried it.",
+  "   And?\n   It was insane.\n   The screen has changed, in front of them. The woman is gone now. In her place is a photograph of two hands clasped together. Junie leans closer. The skin of each finger looks almost translucent.\n   What does insane feel like?\n   Sarah pauses. Do you remember the first time you ever fell in love?\n   Yeah, kinda.\n   It’s exactly like that, Sarah says with a knowing look.",
+  "Except there’s no boy. There never has to be a boy again.\n   Junie frowns. {A} How, afterward, she could barely stand to listen to TV Girl because the opening of Lovers Rock was enough to make her feel physically ill.\n   So you feel really happy? And then you feel really, really sad? She asks.\n   Sarah shakes her head. It’s more like the world opens up right in front of you.",
+  "Like everything you’ve ever wanted is right there, and it’s even better than you’ve ever imagined it could be.\n   Their class ends. People get up all around them, shuffling papers, trying to shimmy out of the narrow rows of seats. Sarah puts her phone away, but Junie stays seated.\n   How long does it last?\n   Four or five hours.\n   And what happens after?\n   Sarah shrugs. It just stops. There isn’t a crazy comedown.\n   She takes a little silver packet out of her bag, and hands it to Junie.",
+  "   Here, she says.\n   You’re just giving me one?\n   I have like twenty.\n   Jesus Christ.\n   Don’t be dramatic. Sarah smiles down at her. It’s just for fun.",
+  "In the dining hall, later, Junie thinks about what Sarah said. About the anticipation of something good, of what that could do to you. She can feel the packet in her pocket, its small, flat shape pressing up against her leg.\n   What happens after, she texts Sarah.\n   wdym?\n   Like when the pill wears off. What do you feel?\n   Three little dots appear, and then disappear.\n   normal?\n   A moment later: maybe a little sad, lol.\n   Junie puts her phone down again.",
+  "A little sadness is a lot more than she has given to be in love, before. She remembers the spring of her freshman year, how she had been so sad for so long that her body had mutinied. She had, for weeks, developed a patchy red rash all over her arms, the backs of her legs. Day after day she had laid flat on her back in her twin bed, staring up at the ceiling, unable to sleep. And more recently, these last few weeks. How she wakes up sometimes in the middle of the night, with a sense of foreboding, a stale pressure on her heart that turns her pulse into a rocket. Outside, the trees move in the wind. Sometimes she thinks that she might be dying.",
+  "She presses her hands into her chest, feeling the protrusions of her ribs.\n   The worst part of it, she thinks, was how little of that sadness really belonged to her. {C} It was ridiculous, when she thought about it like that.\n   She looks down at her plate. There is a little pool of murky oil gathering underneath her vegetables.",
+  "She has eaten all of the rice and most of the chicken, and there is a piece of broccoli caught between the tines of her fork. Around her, people are laughing, scraping their chairs against the floor, carrying bowls of cereal and half-eaten sandwiches back to the dish return. Through the enormous glass windows, she can see the trees outside, their leaves beginning to yellow at the edges. In another month, they will all fall off. She thinks of how much she will miss the summer. How she is always missing things, even before they are over."
+];
+
+const slots = {
+  "A": {
+    "pick": 0,
+    "amy": "She thinks of being seventeen, of lying awake with her phone underneath her pillow, the ringer turned off.",
+    "texts": [
+      "She thinks of being fourteen, of a boy who sat behind her in algebra and let her copy his homework, of lying awake with her phone underneath her pillow, the ringer turned off.",
+      "She thinks of being seventeen, of lying awake with her phone underneath her pillow, the ringer turned off.",
+      "She thinks of being eighteen, of the week before she left for college, of lying awake with her phone underneath her pillow, the ringer turned off.",
+      "She thinks of being seventeen, of lying awake with her phone underneath her pillow, the ringer turned off."
+    ],
+    "excerpts": [
+      "She thinks of being fourteen, of a boy who sat behind her in algebra…",
+      "She thinks of being seventeen, of lying awake with her phone underneath her pillow…",
+      "She thinks of being eighteen, of the week before she left for college…",
+      "She thinks of being seventeen, of lying awake with her phone underneath her pillow…"
+    ]
+  },
+  "B": {
+    "pick": 1,
+    "amy": "They have not spoken in more than a month.",
+    "texts": [
+      "They spoke on Tuesday, briefly, about a charger he had left at her place.",
+      "They have not spoken in more than a month.",
+      "They have not spoken since the summer before last.",
+      "They text, sometimes. He likes her stories a few hours after she posts them, never right away."
+    ],
+    "excerpts": [
+      "They spoke on Tuesday, briefly, about a charger he had left at her place.",
+      "They have not spoken in more than a month.",
+      "They have not spoken since the summer before last.",
+      "They text, sometimes. He likes her stories a few hours after she posts them…"
+    ]
+  },
+  "C": {
+    "pick": 2,
+    "amy": "It had come from another person, from the peculiar arrangement of his affections, from the fact that he just couldn’t keep trying.",
+    "texts": [
+      "It had come from another person, from the peculiar arrangement of his affections, from the fact that he just couldn’t keep trying.",
+      "It had come from another person, from the peculiar arrangement of his affections, from the fact that she had stopped trying first, and he had let her.",
+      "It had come from another person, from the peculiar arrangement of his affections, from the fact that neither of them could say which week, exactly, they had stopped trying.",
+      "It had come from another person, from the peculiar arrangement of his affections, from the fact that he never quite stopped trying, and never quite tried."
+    ],
+    "excerpts": [
+      "…from the fact that he just couldn’t keep trying.",
+      "…from the fact that she had stopped trying first, and he had let her.",
+      "…neither of them could say which week, exactly, they had stopped trying.",
+      "…he never quite stopped trying, and never quite tried."
+    ]
+  }
+};
+
+const questions = [
+  { text: 'How old were you when it started?', options: ['14 or younger', '15 to 17', '18 or older', 'I’d rather not say'] },
+  { text: 'When did you last speak to them?', options: ['This week', 'More than a month ago', 'Years ago', 'We still talk'] },
+  { text: 'How did it end?', options: ['They left', 'I left', 'It faded', 'It hasn’t'] }
+];
+
+const screenBox = document.getElementById('screen');
+const answerInput = document.getElementById('answer');
+const pageText = document.getElementById('page-text');
+
+let screen = 'title';
+let question = 0;
+let answer = '';
+let picks = [1, 1, 0];
+let page = 0;
+let typed = 0;
+let rowPages = [];
+let idleTimer = null;
+
+const settings = new URLSearchParams(window.location.search);
+if (settings.get('crt') === '0') {
+  document.body.classList.add('flat');
+}
+if (settings.get('color') === 'amber' || settings.get('color') === 'white') {
+  document.body.classList.add(settings.get('color'));
+}
+
+function fitScreen() {
+  const scale = Math.min(window.innerWidth / 640, window.innerHeight / 480);
+  screenBox.style.transform = 'scale(' + scale + ')';
+}
+
+function show(name) {
+  screen = name;
+  for (const view of document.querySelectorAll('.view')) {
+    view.hidden = view.id !== name;
+  }
+  if (name === 'ask') {
+    answerInput.focus();
+  } else {
+    answerInput.blur();
+  }
+}
+
+function textForPage(index) {
+  return pages[index].replace(/\{([ABC])\}/g, function (match, key) {
+    const slot = slots[key];
+    return slot.texts[picks[slot.pick]];
+  });
+}
+
+function begin() {
+  answer = '';
+  answerInput.value = '';
+  show('ask');
+}
+
+function submitAnswer() {
+  answer = answerInput.value.trim();
+  question = 0;
+  showQuestion();
+}
+
+function showQuestion() {
+  document.getElementById('question-number').textContent = (question + 2) + ' / 4';
+  document.getElementById('question').textContent = questions[question].text;
+  const optionTexts = document.querySelectorAll('.option-text');
+  for (let i = 0; i < optionTexts.length; i++) {
+    optionTexts[i].textContent = questions[question].options[i];
+  }
+  show('choose');
+}
+
+function choose(choice) {
+  picks[question] = choice;
+  if (question < questions.length - 1) {
+    question = question + 1;
+    showQuestion();
+  } else {
+    page = 0;
+    typed = 0;
+    show('reading');
+    drawPage();
+  }
+}
+
+function drawPage() {
+  const text = textForPage(page);
+  pageText.textContent = text.slice(0, typed);
+  document.getElementById('page-number').textContent = 'page ' + (page + 1) + ' / ' + pages.length;
+  if (page === pages.length - 1) {
+    document.getElementById('next-label').textContent = 'finish';
+  } else {
+    document.getElementById('next-label').textContent = 'next';
+  }
+}
+
+function typeMore() {
+  if (screen !== 'reading') {
+    return;
+  }
+  const length = textForPage(page).length;
+  if (typed < length) {
+    typed = Math.min(length, typed + 2);
+    drawPage();
+  }
+}
+
+function next() {
+  const length = textForPage(page).length;
+  if (typed < length) {
+    typed = length;
+  } else if (page < pages.length - 1) {
+    page = page + 1;
+    typed = 0;
+  } else {
+    show('end');
+    return;
+  }
+  drawPage();
+}
+
+function back() {
+  if (page > 0) {
+    page = page - 1;
+    typed = textForPage(page).length;
+    drawPage();
+  }
+}
+
+function reveal() {
+  if (answer) {
+    document.getElementById('you-typed').textContent = 'You typed: “' + answer + '”';
+  } else {
+    document.getElementById('you-typed').textContent = 'You typed: nothing';
+  }
+
+  const rows = [];
+  for (const key of ['A', 'B', 'C']) {
+    const slot = slots[key];
+    const choice = picks[slot.pick];
+    rows.push({
+      page: pages.findIndex(function (text) { return text.includes('{' + key + '}'); }),
+      isModel: slot.texts[choice] !== slot.amy,
+      excerpt: slot.excerpts[choice]
+    });
+  }
+  rows.sort(function (a, b) { return a.page - b.page; });
+
+  rowPages = [];
+  let modelCount = 0;
+  const rowButtons = document.querySelectorAll('.row');
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const label = rowButtons[i].querySelector('.row-label');
+    rowButtons[i].querySelector('.row-page').textContent = 'p. ' + (row.page + 1);
+    rowButtons[i].querySelector('.row-excerpt').textContent = row.excerpt;
+    if (row.isModel) {
+      label.textContent = 'MODEL';
+      label.classList.add('model');
+      modelCount = modelCount + 1;
+    } else {
+      label.textContent = 'AMY';
+      label.classList.remove('model');
+    }
+    rowPages.push(row.page);
+  }
+
+  if (modelCount === 0) {
+    document.getElementById('summary').textContent = 'Your answers matched the draft, so every sentence is Amy’s.';
+  } else {
+    document.getElementById('summary').textContent = modelCount + ' of 3 passages were rewritten from your answers. Every other sentence is Amy’s.';
+  }
+  show('reveal');
+}
+
+function openRow(index) {
+  page = rowPages[index];
+  typed = textForPage(page).length;
+  show('reading');
+  drawPage();
+}
+
+function restart() {
+  question = 0;
+  answer = '';
+  answerInput.value = '';
+  picks = [1, 1, 0];
+  page = 0;
+  typed = 0;
+  show('title');
+}
+
+function resetIdle() {
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(restart, 3 * 60 * 1000);
+}
+
+document.addEventListener('keydown', function (event) {
+  resetIdle();
+  const key = event.key;
+
+  if (document.activeElement && document.activeElement.tagName === 'BUTTON') {
+    document.activeElement.blur();
+  }
+
+  if (key === 'Escape') {
+    restart();
+    return;
+  }
+
+  if (screen === 'title') {
+    event.preventDefault();
+    begin();
+  } else if (screen === 'ask') {
+    if (key === 'Enter') {
+      event.preventDefault();
+      submitAnswer();
+    }
+  } else if (screen === 'choose') {
+    if (['1', '2', '3', '4'].includes(key)) {
+      choose(Number(key) - 1);
+    }
+  } else if (screen === 'reading') {
+    if (key === ' ' || key === 'Enter') {
+      event.preventDefault();
+      next();
+    } else if (key === 'b') {
+      back();
+    }
+  } else if (screen === 'end') {
+    if (key === 'r') {
+      reveal();
+    }
+  } else if (screen === 'reveal') {
+    if (['1', '2', '3'].includes(key)) {
+      openRow(Number(key) - 1);
+    }
+  }
+});
+
+document.addEventListener('click', resetIdle);
+document.getElementById('begin-button').addEventListener('click', begin);
+document.getElementById('answer-button').addEventListener('click', submitAnswer);
+document.getElementById('next-button').addEventListener('click', next);
+document.getElementById('back-button').addEventListener('click', back);
+document.getElementById('reveal-button').addEventListener('click', reveal);
+
+for (const button of document.querySelectorAll('.restart-button')) {
+  button.addEventListener('click', restart);
+}
+
+for (const button of document.querySelectorAll('.option')) {
+  button.addEventListener('click', function () {
+    choose(Number(button.dataset.choice));
+  });
+}
+
+for (const button of document.querySelectorAll('.row')) {
+  button.addEventListener('click', function () {
+    openRow(Number(button.dataset.row));
+  });
+}
+
+window.addEventListener('resize', fitScreen);
+fitScreen();
+setInterval(typeMore, 40);
+resetIdle();
+</script>
+</body>
+</html>
