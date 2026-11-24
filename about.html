@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About — Amy Jane Wang</title>
+  <link rel="icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="stylesheet" href="css/site.css">
   <style>
     /* Fill the screen so the photo and bio can sit along the bottom. */
@@ -14,20 +16,21 @@
     }
 
     /* The bio sits beside the photo, lined up with its top edge, so it's on
-       screen as soon as the page opens. On narrow screens it moves above the photo.
-
-       wrap-reverse is what puts the bio above the photo when they don't fit
-       side by side: it stacks rows from the bottom of the screen up. It also flips
-       the up/down directions for the two align rules below, so here
-       "flex-end" means the top and "flex-start" means the bottom. */
+       screen as soon as the page opens. When they don't fit side by side, the
+       bio moves below the photo. */
     main {
       flex-grow: 1;
       display: flex;
-      flex-wrap: wrap-reverse;
-      align-items: flex-end;      /* bio lines up with the top of the photo */
-      align-content: flex-start;  /* everything sits at the bottom of the screen */
+      flex-wrap: wrap;
+      align-items: flex-start;
+      align-content: flex-end;
       gap: 32px 56px;
       padding: clamp(32px, 5vw, 72px) var(--side-margin) clamp(48px, 8vw, 120px);
+    }
+
+    /* The photo may shrink (down to 360px wide) to keep the bio beside it. */
+    .cutout {
+      flex: 1 1 360px;
     }
 
     .bio {

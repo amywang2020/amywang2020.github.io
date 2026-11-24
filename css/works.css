@@ -49,6 +49,11 @@ html {
   border-bottom: none;
 }
 
+/* Add "no-lines" to the main tag's class to drop the lines between items (the reading page uses it). */
+.no-lines .works-item {
+  border-bottom: none;
+}
+
 .works-item.visible {
   opacity: 1;
   transform: translateY(0);
