@@ -44,23 +44,20 @@
       display: flex;
       flex-wrap: wrap;
       column-gap: 36px;
-      row-gap: 12px;
+      row-gap: 4px;
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
     }
     nav a {
-      font-size: 0.82rem;
-      font-weight: 400;
-      letter-spacing: 0.08em;
-      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
       color: var(--ink);
-      position: relative;
-      padding-bottom: 3px;
-      transition: color 0.2s;
+      text-decoration: none;
     }
-    nav a.active::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      border-bottom: 1px solid var(--ink);
+    nav a.active {
+      text-decoration: underline;
+      text-underline-offset: 6px;
     }
     nav a:hover { color: var(--ink-mid); }
 
